@@ -1000,15 +1000,6 @@ Financial Goals
                             {{ goal.target_date.strftime("%d-%m-%Y") }}
                         </small>
 
-                        {% if goal.budgets and goal.budgets|length > 0 %}
-                            <div style="margin-top: 6px;">
-                                <span style="font-size: 12px; background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                                    🎯 Budget: ₹{{ "{:,.0f}".format(goal.budgets[0].monthly_budget) }}/mo ({{ goal.budgets[0].month }} {{ goal.budgets[0].year }})
-                                </span>
-                            </div>
-                        {% endif %}
-
-
                     </div>
 
 

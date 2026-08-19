@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session
 import re
 from flask_login import login_required, current_user
-from sqlalchemy import func, inspect, text
+from sqlalchemy import func
 
 from config import Config
 from extensions import db, login_manager, bcrypt
@@ -11,11 +11,8 @@ from models.expense import Expense
 from models.budget import Budget
 from models.income import Income
 from models.account import Account
-from models.goal import Goal
-from models.alert import FinancialAlert
 
-from services.spending_analysis import get_spending_analysis, get_monthly_spending_trend
-from services.alert_service import check_and_create_alerts, get_user_alerts, mark_alert_as_read
+
 
 from routes.auth import auth
 from routes.profile import profile
@@ -25,7 +22,6 @@ from routes.income import income
 from routes.account import account
 from routes.investment import investment
 from routes.goal import goal
-from routes.analytics import analytics_bp
 
 app = Flask(__name__)
 
@@ -54,28 +50,12 @@ app.register_blueprint(income)
 app.register_blueprint(account)
 app.register_blueprint(investment)
 app.register_blueprint(goal)
-app.register_blueprint(analytics_bp)
 
 
 # Home Page
 @app.route("/")
 def home():
     return redirect(url_for("auth.login"))
-
-
-# Safe Database Migration Helper
-def init_db_schema():
-    with app.app_context():
-        db.create_all()
-        try:
-            inspector = inspect(db.engine)
-            if "budgets" in inspector.get_table_names():
-                columns = [col["name"] for col in inspector.get_columns("budgets")]
-                if "goal_id" not in columns:
-                    with db.engine.begin() as conn:
-                        conn.execute(text("ALTER TABLE budgets ADD COLUMN goal_id INTEGER REFERENCES goals(id)"))
-        except Exception as e:
-            app.logger.warning(f"Schema check warning: {e}")
 
 
 # Dashboard
@@ -101,24 +81,30 @@ def dashboard():
     incomes = Income.query.filter_by(user_id=current_user.id).all()
 
     # Get user's budget
-    budget_obj = Budget.query.filter_by(user_id=current_user.id).first()
+    budget = Budget.query.filter_by(user_id=current_user.id).first()
 
     # Get user's accounts
     accounts = Account.query.filter_by(user_id=current_user.id).all()
 
-    # Get user's goals
-    goals = Goal.query.filter_by(user_id=current_user.id).all()
-
     # Calculate totals
-    total_expenses = sum(exp.amount for exp in expenses)
-    total_income = sum(inc.amount for inc in incomes)
-    total_account_balance = sum(acc.balance for acc in accounts)
+    total_expenses = sum(
+        exp.amount for exp in expenses
+    )
+
+    total_income = sum(
+        inc.amount for inc in incomes
+    )
+
+    total_account_balance = sum(
+        acc.balance for acc in accounts
+    )
+
 
     # Savings
     total_savings = total_income - total_expenses
 
     # Budget amount
-    budget_amount = budget_obj.monthly_budget if budget_obj else 0
+    budget_amount = budget.monthly_budget if budget else 0
 
     # Remaining budget
     remaining_budget = budget_amount - total_expenses
@@ -143,7 +129,7 @@ def dashboard():
     categories = [item[0] for item in category_data]
     amounts = [float(item[1]) for item in category_data]
 
-    # Monthly Expense Trend (Bar Chart - original)
+    # Monthly Expense Trend (Bar Chart)
     monthly_data = (
         db.session.query(
             func.strftime("%m", Expense.expense_date),
@@ -155,31 +141,26 @@ def dashboard():
     )
 
     month_names = {
-        "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr",
-        "05": "May", "06": "Jun", "07": "Jul", "08": "Aug",
-        "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec"
+        "01": "Jan",
+        "02": "Feb",
+        "03": "Mar",
+        "04": "Apr",
+        "05": "May",
+        "06": "Jun",
+        "07": "Jul",
+        "08": "Aug",
+        "09": "Sep",
+        "10": "Oct",
+        "11": "Nov",
+        "12": "Dec"
     }
 
     months = []
     monthly_amounts = []
 
-    for month_str, amount in monthly_data:
-        months.append(month_names.get(month_str, month_str))
+    for month, amount in monthly_data:
+        months.append(month_names.get(month, month))
         monthly_amounts.append(float(amount))
-
-    # =========================================================
-    # MILESTONE 3: SMART FINANCIAL INSIGHTS & SERVICES
-    # =========================================================
-
-    # 1. Spending Pattern Analysis
-    spending_analysis = get_spending_analysis(current_user.id)
-
-    # 2. 6-Month Income vs Expense vs Savings Trend
-    spending_trend = get_monthly_spending_trend(current_user.id, num_months=6)
-
-    # 3. Financial Event Alerts
-    check_and_create_alerts(current_user.id)
-    alerts = get_user_alerts(current_user.id, include_read=False)
 
     return render_template(
         "dashboard.html",
@@ -188,6 +169,8 @@ def dashboard():
         total_expenses=total_expenses,
         total_savings=total_savings,
         total_account_balance=total_account_balance,
+
+
         budget_amount=budget_amount,
         remaining_budget=remaining_budget,
         budget_used=budget_used,
@@ -195,23 +178,12 @@ def dashboard():
         amounts=amounts,
         months=months,
         monthly_amounts=monthly_amounts,
-        recent_transactions=recent_transactions,
-        budget=budget_obj,
-        goals=goals,
-        spending_analysis=spending_analysis,
-        spending_trend=spending_trend,
-        alerts=alerts
+        recent_transactions=recent_transactions
     )
 
 
-@app.route("/alerts/<int:alert_id>/read", methods=["POST"])
-@login_required
-def mark_alert_read(alert_id):
-    mark_alert_as_read(alert_id, current_user.id)
-    flash("Alert marked as read.", "success")
-    return redirect(request.referrer or url_for("dashboard"))
-
-
 if __name__ == "__main__":
-    init_db_schema()
+    with app.app_context():
+        db.create_all()
+
     app.run(debug=True)

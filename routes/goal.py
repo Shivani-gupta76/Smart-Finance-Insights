@@ -5,8 +5,6 @@ from datetime import datetime
 from extensions import db
 from models.goal import Goal
 from models.goal_part import GoalPart
-from models.budget import Budget
-
 
 
 goal = Blueprint(
@@ -424,14 +422,6 @@ def goal_details(id):
         part_progress = 0
 
     # -----------------------------------------------------
-    # LINKED BUDGET
-    # -----------------------------------------------------
-    linked_budget = Budget.query.filter_by(
-        goal_id=goal_data.id,
-        user_id=current_user.id
-    ).first()
-
-    # -----------------------------------------------------
     # RENDER
     # -----------------------------------------------------
 
@@ -458,11 +448,8 @@ def goal_details(id):
 
         part_progress=part_progress,
 
-        edit_part=edit_part,
-
-        linked_budget=linked_budget
+        edit_part=edit_part
     )
-
 # =========================================================
 # EDIT GOAL PART
 # =========================================================

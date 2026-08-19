@@ -66,31 +66,7 @@ Dashboard Overview
 
 </div>
 
-<!-- =========================================================
-     MILESTONE 3: FINANCIAL EVENT ALERTS SYSTEM
-========================================================= -->
 
-{% if alerts %}
-<div class="smart-alerts-container">
-    {% for alert in alerts %}
-        <div class="alert-item {{ alert.severity }}">
-            <div class="alert-content">
-                <strong>
-                    {% if alert.severity == 'danger' %}🚨
-                    {% elif alert.severity == 'warning' %}⚠️
-                    {% elif alert.severity == 'info' %}ℹ️
-                    {% else %}✅{% endif %}
-                    {{ alert.title }}
-                </strong>
-                <span>{{ alert.message }}</span>
-            </div>
-            <form method="POST" action="{{ url_for('mark_alert_read', alert_id=alert.id) }}">
-                <button type="submit" class="btn-dismiss-alert">Mark as Read</button>
-            </form>
-        </div>
-    {% endfor %}
-</div>
-{% endif %}
 
 <!-- Dashboard Cards -->
 
@@ -103,7 +79,7 @@ Dashboard Overview
         </div>
 
         <div class="card-info">
-            <h4>💰 Total Income</h4>
+            <h4>💰Total Income</h4>
             <h2>₹{{ "{:,.0f}".format(total_income) }}</h2>
         </div>
     </div>
@@ -127,7 +103,7 @@ Dashboard Overview
         </div>
 
         <div class="card-info">
-            <h4>🏦 Total Savings</h4>
+            <h4>🏦 Total Savingss</h4>
 
             <h2 {% if total_savings < 0 %}style="color:#EF4444;"{% endif %}>
                 ₹{{ "{:,.0f}".format(total_savings) }}
@@ -257,11 +233,15 @@ Dashboard Overview
 
     <tr>
 
+        
+
     <td>{{ expense.expense_date.strftime("%d-%m-%Y") }}</td>
     <td>{{ expense.title }}</td>
     <td>{{ expense.category }}</td>
     <td>{{ expense.payment_method }}</td>
     <td>₹{{ "{:,.0f}".format(expense.amount) }}</td>
+
+
 
     </tr>
 
@@ -278,6 +258,8 @@ Dashboard Overview
     </tr>
 
 {% endif %}
+
+
 
         </tbody>
 

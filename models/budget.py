@@ -23,14 +23,3 @@ class Budget(db.Model):
         db.ForeignKey("users.id"),
         nullable=False
     )
-
-    goal_id = db.Column(
-        db.Integer,
-        db.ForeignKey("goals.id"),
-        nullable=True
-    )
-
-    goal = db.relationship(
-        "Goal",
-        backref=db.backref("budgets", lazy=True)
-    )
