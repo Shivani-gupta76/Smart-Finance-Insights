@@ -1,0 +1,314 @@
+{% extends "layout.html" %}
+
+{% block title %}
+FinSight — Financial Alerts Dashboard
+{% endblock %}
+
+{% block css %}
+<style>
+    .alerts-container {
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .alerts-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .alerts-header h1 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alerts-header p {
+        color: #64748B;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    /* Top Summary Grid */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        border: 1px solid #E2E8F0;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .summary-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .summary-icon.total { background: #EFF6FF; color: #2563EB; }
+    .summary-icon.unread { background: #FEF2F2; color: #DC2626; }
+    .summary-icon.critical { background: #FFF7ED; color: #EA580C; }
+    .summary-icon.resolved { background: #F0FDF4; color: #16A34A; }
+
+    .summary-info .label {
+        font-size: 13px;
+        color: #64748B;
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .summary-info .value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+
+    /* Filter Pills */
+    .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filter-pill {
+        padding: 8px 16px;
+        border-radius: 20px;
+        background: #F1F5F9;
+        color: #475569;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .filter-pill:hover, .filter-pill.active {
+        background: #2563EB;
+        color: #ffffff;
+    }
+
+    /* Alert Items */
+    .alerts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .alert-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 18px;
+        border-left: 5px solid #CBD5E1;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        transition: transform 0.2s ease;
+    }
+
+    .alert-card:hover {
+        transform: translateY(-1px);
+    }
+
+    .alert-card.danger { border-left-color: #DC2626; background: #FEF2F2; }
+    .alert-card.warning { border-left-color: #D97706; background: #FFFBEB; }
+    .alert-card.info { border-left-color: #2563EB; background: #EFF6FF; }
+    .alert-card.success { border-left-color: #16A34A; background: #F0FDF4; }
+
+    .alert-main {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .alert-badge-icon {
+        font-size: 20px;
+        margin-top: 2px;
+    }
+
+    .alert-card.danger .alert-badge-icon { color: #DC2626; }
+    .alert-card.warning .alert-badge-icon { color: #D97706; }
+    .alert-card.info .alert-badge-icon { color: #2563EB; }
+    .alert-card.success .alert-badge-icon { color: #16A34A; }
+
+    .alert-details h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0 0 4px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .alert-details p {
+        color: #334155;
+        font-size: 14px;
+        margin: 0 0 6px 0;
+        line-height: 1.4;
+    }
+
+    .alert-meta {
+        font-size: 12px;
+        color: #64748B;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn-toggle-read {
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid #CBD5E1;
+        background: #ffffff;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-toggle-read:hover {
+        background: #F1F5F9;
+        color: #0F172A;
+    }
+
+    .empty-state {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        color: #64748B;
+        border: 1px dashed #CBD5E1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="alerts-container">
+
+    <!-- Header -->
+    <div class="alerts-header">
+        <div>
+            <h1><i class="fa-solid fa-bell"></i> Alerts & Notifications Dashboard</h1>
+            <p>Monitor financial triggers, budget limits, spending spikes, and goal progress in real time.</p>
+        </div>
+    </div>
+
+    <!-- 1. Top Summary Cards -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-icon total"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="summary-info">
+                <span class="label">Total Alerts</span>
+                <span class="value">{{ total_alerts }}</span>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon unread"><i class="fa-solid fa-bell-dot"></i></div>
+            <div class="summary-info">
+                <span class="label">Unread Alerts</span>
+                <span class="value" style="color: #DC2626;">{{ unread_alerts }}</span>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon critical"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="summary-info">
+                <span class="label">Critical Alerts</span>
+                <span class="value" style="color: #EA580C;">{{ critical_alerts }}</span>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon resolved"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="summary-info">
+                <span class="label">Read / Resolved</span>
+                <span class="value" style="color: #16A34A;">{{ resolved_alerts }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Filter Pills -->
+    <div class="filter-bar">
+        <a href="{{ url_for('alert.alerts', filter='all') }}" class="filter-pill {% if active_filter == 'all' %}active{% endif %}">All Alerts</a>
+        <a href="{{ url_for('alert.alerts', filter='unread') }}" class="filter-pill {% if active_filter == 'unread' %}active{% endif %}">Unread ({{ unread_alerts }})</a>
+        <a href="{{ url_for('alert.alerts', filter='budget') }}" class="filter-pill {% if active_filter == 'budget' %}active{% endif %}">Budget Alerts</a>
+        <a href="{{ url_for('alert.alerts', filter='goal') }}" class="filter-pill {% if active_filter == 'goal' %}active{% endif %}">Goal Milestones</a>
+        <a href="{{ url_for('alert.alerts', filter='spending') }}" class="filter-pill {% if active_filter == 'spending' %}active{% endif %}">Spending Alerts</a>
+        <a href="{{ url_for('alert.alerts', filter='critical') }}" class="filter-pill {% if active_filter == 'critical' %}active{% endif %}">Critical Only</a>
+    </div>
+
+    <!-- 3. Alert Items List -->
+    {% if alerts %}
+    <div class="alerts-list">
+        {% for alert in alerts %}
+        <div class="alert-card {{ alert.severity }}">
+            <div class="alert-main">
+                <div class="alert-badge-icon">
+                    {% if alert.severity == 'danger' %}
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    {% elif alert.severity == 'warning' %}
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    {% elif alert.severity == 'success' %}
+                        <i class="fa-solid fa-circle-check"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-info"></i>
+                    {% endif %}
+                </div>
+                <div class="alert-details">
+                    <h3>
+                        {{ alert.title }}
+                        {% if not alert.is_read %}
+                            <span style="font-size: 11px; padding: 2px 7px; background: #DC2626; color: #fff; border-radius: 10px; font-weight: 600;">NEW</span>
+                        {% endif %}
+                    </h3>
+                    <p>{{ alert.message }}</p>
+                    <div class="alert-meta">
+                        <span><i class="fa-regular fa-clock"></i> {{ alert.created_at.strftime('%d %b %Y, %I:%M %p') if alert.created_at else '' }}</span>
+                        <span><i class="fa-solid fa-tag"></i> {{ alert.alert_type }}</span>
+                    </div>
+                </div>
+            </div>
+            <form action="{{ url_for('alert.toggle_alert_read', alert_id=alert.id) }}" method="POST">
+                <button type="submit" class="btn-toggle-read">
+                    {% if alert.is_read %}
+                        <i class="fa-solid fa-envelope-open"></i> Mark Unread
+                    {% else %}
+                        <i class="fa-solid fa-check"></i> Mark as Read
+                    {% endif %}
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fa-solid fa-circle-check" style="font-size: 32px; color: #16A34A; margin-bottom: 12px; display: block;"></i>
+        <h3 style="margin: 0 0 6px 0; color: #0F172A;">No Alerts Found</h3>
+        <p style="margin: 0;">There are no alerts matching the selected filter criteria.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
