@@ -75,6 +75,13 @@ class Goal(db.Model):
         db.ForeignKey("users.id"),
         nullable=False
     )
-
+    
+    # Relationship with Expenses
+    expenses = db.relationship(
+        "Expense",
+        back_populates="goal",
+        lazy=True
+    )
+    
     def __repr__(self):
         return f"<Goal {self.goal_name}>"
