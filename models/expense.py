@@ -60,9 +60,22 @@ class Expense(db.Model):
         nullable=False
     )
 
+     # Optional relationship with Financial Goal
+    goal_id = db.Column(
+        db.Integer,
+        db.ForeignKey("goals.id"),
+        nullable=True
+    )
+
     # Relationship with Account
     account = db.relationship(
         "Account",
+        back_populates="expenses"
+    )
+
+    # Relationship with Goal
+    goal = db.relationship(
+        "Goal",
         back_populates="expenses"
     )
 
