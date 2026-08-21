@@ -14,7 +14,7 @@ from models.account import Account
 from models.goal import Goal
 from models.alert import FinancialAlert
 
-from services.spending_analysis import get_spending_analysis, get_monthly_spending_trend
+from services.spending_analysis import get_spending_analysis, get_monthly_spending_trend, get_goal_expense_analytics, calculate_financial_health_score
 from services.alert_service import check_and_create_alerts, get_user_alerts, mark_alert_as_read
 
 from routes.auth import auth
@@ -26,6 +26,7 @@ from routes.account import account
 from routes.investment import investment
 from routes.goal import goal
 from routes.analytics import analytics_bp
+from routes.alert import alert_bp
 
 app = Flask(__name__)
 
@@ -45,6 +46,14 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+@app.context_processor
+def inject_global_vars():
+    if current_user.is_authenticated:
+        unread_count = FinancialAlert.query.filter_by(user_id=current_user.id, is_read=False).count()
+        return dict(unread_alerts_count=unread_count)
+    return dict(unread_alerts_count=0)
+
+
 # Register Blueprints
 app.register_blueprint(auth)
 app.register_blueprint(profile)
@@ -55,6 +64,7 @@ app.register_blueprint(account)
 app.register_blueprint(investment)
 app.register_blueprint(goal)
 app.register_blueprint(analytics_bp)
+app.register_blueprint(alert_bp)
 
 
 # Home Page
@@ -74,6 +84,12 @@ def init_db_schema():
                 if "goal_id" not in columns:
                     with db.engine.begin() as conn:
                         conn.execute(text("ALTER TABLE budgets ADD COLUMN goal_id INTEGER REFERENCES goals(id)"))
+
+            if "expenses" in inspector.get_table_names():
+                columns = [col["name"] for col in inspector.get_columns("expenses")]
+                if "goal_id" not in columns:
+                    with db.engine.begin() as conn:
+                        conn.execute(text("ALTER TABLE expenses ADD COLUMN goal_id INTEGER REFERENCES goals(id)"))
         except Exception as e:
             app.logger.warning(f"Schema check warning: {e}")
 
@@ -177,9 +193,11 @@ def dashboard():
     # 2. 6-Month Income vs Expense vs Savings Trend
     spending_trend = get_monthly_spending_trend(current_user.id, num_months=6)
 
-    # 3. Financial Event Alerts
+    # 3. Financial Event Alerts Evaluation
     check_and_create_alerts(current_user.id)
-    alerts = get_user_alerts(current_user.id, include_read=False)
+
+    # 4. Expense-to-Goal Relationship Analytics
+    goal_expense_analytics = get_goal_expense_analytics(current_user.id)
 
     return render_template(
         "dashboard.html",
@@ -200,7 +218,7 @@ def dashboard():
         goals=goals,
         spending_analysis=spending_analysis,
         spending_trend=spending_trend,
-        alerts=alerts
+        goal_expense_analytics=goal_expense_analytics
     )
 
 
