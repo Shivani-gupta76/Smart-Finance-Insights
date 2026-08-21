@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from extensions import db
 from models.expense import Expense
 from models.account import Account
+from models.goal import Goal
 from datetime import datetime
 
 expense = Blueprint(
@@ -20,6 +21,10 @@ def expenses():
         user_id=current_user.id
     ).all()
 
+    goals = Goal.query.filter_by(
+        user_id=current_user.id
+    ).all()
+
     if request.method == "POST":
 
         title = request.form.get("title")
@@ -29,6 +34,14 @@ def expenses():
         account_id = int(request.form.get("account_id"))
         expense_date = request.form.get("expense_date")
         description = request.form.get("description")
+
+        goal_id_val = request.form.get("goal_id")
+        goal_id = None
+        if goal_id_val and goal_id_val.strip() and goal_id_val != "none" and goal_id_val != "0":
+            gid = int(goal_id_val)
+            g_check = Goal.query.filter_by(id=gid, user_id=current_user.id).first()
+            if g_check:
+                goal_id = gid
 
         account = Account.query.filter_by(
             id=account_id,
@@ -49,7 +62,8 @@ def expenses():
                 "%Y-%m-%d"
             ).date(),
             description=description,
-            user_id=current_user.id
+            user_id=current_user.id,
+            goal_id=goal_id
         )
 
         db.session.add(new_expense)
@@ -57,7 +71,7 @@ def expenses():
 
         return redirect(url_for("expense.expenses"))
 
-    expenses = Expense.query.filter_by(
+    expenses_list = Expense.query.filter_by(
         user_id=current_user.id
     ).order_by(
         Expense.expense_date.desc()
@@ -65,8 +79,9 @@ def expenses():
 
     return render_template(
         "expenses.html",
-        expenses=expenses,
-        accounts=accounts
+        expenses=expenses_list,
+        accounts=accounts,
+        goals=goals
     )
 
 
@@ -74,15 +89,15 @@ def expenses():
 @login_required
 def delete_expense(id):
 
-    expense = Expense.query.filter_by(
+    expense_obj = Expense.query.filter_by(
         id=id,
         user_id=current_user.id
     ).first_or_404()
 
     # Restore account balance
-    expense.account.balance += expense.amount
+    expense_obj.account.balance += expense_obj.amount
 
-    db.session.delete(expense)
+    db.session.delete(expense_obj)
     db.session.commit()
 
     return redirect(url_for("expense.expenses"))
@@ -92,7 +107,7 @@ def delete_expense(id):
 @login_required
 def edit_expense(id):
 
-    expense = Expense.query.filter_by(
+    expense_obj = Expense.query.filter_by(
         id=id,
         user_id=current_user.id
     ).first_or_404()
@@ -101,10 +116,14 @@ def edit_expense(id):
         user_id=current_user.id
     ).all()
 
+    goals = Goal.query.filter_by(
+        user_id=current_user.id
+    ).all()
+
     if request.method == "POST":
 
-        old_account = expense.account
-        old_amount = expense.amount
+        old_account = expense_obj.account
+        old_amount = expense_obj.amount
 
         # Restore previous balance
         old_account.balance += old_amount
@@ -120,16 +139,25 @@ def edit_expense(id):
         # Deduct from selected account
         new_account.balance -= new_amount
 
-        expense.title = request.form.get("title")
-        expense.category = request.form.get("category")
-        expense.amount = new_amount
-        expense.payment_method = request.form.get("payment_method")
-        expense.account_id = new_account_id
-        expense.expense_date = datetime.strptime(
+        goal_id_val = request.form.get("goal_id")
+        goal_id = None
+        if goal_id_val and goal_id_val.strip() and goal_id_val != "none" and goal_id_val != "0":
+            gid = int(goal_id_val)
+            g_check = Goal.query.filter_by(id=gid, user_id=current_user.id).first()
+            if g_check:
+                goal_id = gid
+
+        expense_obj.title = request.form.get("title")
+        expense_obj.category = request.form.get("category")
+        expense_obj.amount = new_amount
+        expense_obj.payment_method = request.form.get("payment_method")
+        expense_obj.account_id = new_account_id
+        expense_obj.expense_date = datetime.strptime(
             request.form.get("expense_date"),
             "%Y-%m-%d"
         ).date()
-        expense.description = request.form.get("description")
+        expense_obj.description = request.form.get("description")
+        expense_obj.goal_id = goal_id
 
         db.session.commit()
         
@@ -137,6 +165,7 @@ def edit_expense(id):
 
     return render_template(
         "edit_expense.html",
-        expense=expense,
-        accounts=accounts
+        expense=expense_obj,
+        accounts=accounts,
+        goals=goals
     )
