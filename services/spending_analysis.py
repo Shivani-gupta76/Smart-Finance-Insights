@@ -624,3 +624,536 @@ def get_rebuilt_analytics_data(user_id):
         "budget_recommendations": budget_recommendations,
         "ai_insights": ai_insights
     }
+
+
+def get_goal_expense_analytics(user_id):
+    """
+    Computes real Expense-to-Goal Analytics:
+    1. Per Goal Expense Metrics (Total linked expenses, Count, Avg amount, Latest date)
+    2. Goal vs Expense Visualizations (Goal-Linked Expenses by Goal, Goal-linked vs Regular Non-goal expenses)
+    3. Monthly Goal-Linked Expense Trend (Last 6 Months)
+    4. Smart Dashboard Goal-Expense metrics
+    """
+    today = date.today()
+    goals = Goal.query.filter_by(user_id=user_id).all()
+    all_expenses = Expense.query.filter_by(user_id=user_id).all()
+
+    goal_analysis_list = []
+    goal_names = []
+    goal_linked_totals = []
+    total_all_goal_linked = 0.0
+
+    most_expensive_goal_name = "None"
+    max_goal_expense_amt = -1.0
+    latest_goal_expense_obj = None
+
+    for g in goals:
+        linked_exp = [e for e in all_expenses if e.goal_id == g.id]
+        linked_exp.sort(key=lambda x: x.expense_date or date.min, reverse=True)
+
+        total_amt = sum(e.amount for e in linked_exp)
+        count_exp = len(linked_exp)
+        avg_amt = round(total_amt / count_exp, 2) if count_exp > 0 else 0.0
+        latest_date_str = linked_exp[0].expense_date.strftime("%d %b %Y") if count_exp > 0 and linked_exp[0].expense_date else "N/A"
+
+        if count_exp > 0:
+            if not latest_goal_expense_obj or (linked_exp[0].expense_date and linked_exp[0].expense_date > (latest_goal_expense_obj.expense_date or date.min)):
+                latest_goal_expense_obj = linked_exp[0]
+
+        if total_amt > max_goal_expense_amt and total_amt > 0:
+            max_goal_expense_amt = total_amt
+            most_expensive_goal_name = g.goal_name
+
+        total_all_goal_linked += total_amt
+
+        goal_analysis_list.append({
+            "goal": g,
+            "total_expenses": total_amt,
+            "count_expenses": count_exp,
+            "avg_expense": avg_amt,
+            "latest_date": latest_date_str
+        })
+
+        if total_amt > 0 or len(goals) <= 5:
+            goal_names.append(g.goal_name)
+            goal_linked_totals.append(float(total_amt))
+
+    total_all_expenses = sum(e.amount for e in all_expenses)
+    total_regular_expenses = max(0.0, total_all_expenses - total_all_goal_linked)
+
+    goals_with_expenses_count = sum(1 for item in goal_analysis_list if item["count_expenses"] > 0)
+
+    # Monthly Goal-Linked Expense Trend (Last 6 Months)
+    month_labels = []
+    monthly_goal_expenses = []
+    for i in range(5, -1, -1):
+        m_start = get_first_day_of_month(today, i)
+        m_end = get_last_day_of_month(m_start)
+        m_label = m_start.strftime("%b %Y")
+        
+    first_day_curr = get_first_day_of_month(today, 0)
+    first_day_prev = get_first_day_of_month(today, 1)
+    last_day_prev = get_last_day_of_month(first_day_prev)
+
+    # Current Month Income & Expenses
+    curr_m_income = sum(i.amount for i in incomes if i.income_date and i.income_date >= first_day_curr)
+    curr_m_expense = sum(e.amount for e in expenses if e.expense_date and e.expense_date >= first_day_curr)
+    curr_m_savings = curr_m_income - curr_m_expense
+    savings_pct = round((curr_m_savings / curr_m_income) * 100, 1) if curr_m_income > 0 else 0.0
+
+    # Previous Month Expenses for MoM comparison
+    prev_m_expense = sum(e.amount for e in expenses if e.expense_date and first_day_prev <= e.expense_date <= last_day_prev)
+    prev_m_income = sum(i.amount for i in incomes if i.income_date and first_day_prev <= i.income_date <= last_day_prev)
+
+    has_prev_data = prev_m_expense > 0 or prev_m_income > 0
+    mom_expense_change_pct = 0.0
+    if prev_m_expense > 0:
+        mom_expense_change_pct = round(((curr_m_expense - prev_m_expense) / prev_m_expense) * 100, 1)
+
+    # 2. Avg Monthly Expenses
+    expense_months = set()
+    for e in expenses:
+        if e.expense_date:
+            expense_months.add((e.expense_date.year, e.expense_date.month))
+
+    num_active_months = max(1, len(expense_months))
+    total_all_expenses = sum(e.amount for e in expenses)
+    avg_monthly_expenses = round(total_all_expenses / num_active_months, 0)
+
+    # 3. Projected Month-End Balance
+    # Formula Documentation:
+    # Total Accounts Balance represents current real bank/savings balances.
+    # Projected Month-End Balance = Total Accounts Balance.
+    total_accounts_balance = sum(acc.balance for acc in accounts)
+    projected_month_end_balance = total_accounts_balance
+
+    # 4. Active Goals
+    active_goals = [g for g in goals if g.status == "In Progress"]
+    active_goals_count = len(active_goals)
+
+    # 5. Budget Recommendations (Rule-Based & Explainable)
+    budget_recommendations = []
+    monthly_budget_amount = budget.monthly_budget if budget else 0.0
+    budget_used_pct = round((curr_m_expense / monthly_budget_amount) * 100, 1) if monthly_budget_amount > 0 else 0.0
+
+    if budget:
+        if budget_used_pct > 100:
+            budget_recommendations.append(
+                f"High Budget Utilization: You have exceeded your monthly budget (₹{curr_m_expense:,.0f} spent out of ₹{monthly_budget_amount:,.0f}). Consider pausing non-essential expenses."
+            )
+        elif budget_used_pct >= 75:
+            budget_recommendations.append(
+                f"Budget Caution: You have utilized {budget_used_pct}% of your monthly budget. Keep an eye on remaining funds (₹{monthly_budget_amount - curr_m_expense:,.0f} left)."
+            )
+        else:
+            budget_recommendations.append(
+                f"Budget Discipline: Good progress! You have used {budget_used_pct}% of your ₹{monthly_budget_amount:,.0f} budget so far."
+            )
+    else:
+        budget_recommendations.append(
+            "Set Up a Monthly Budget: Create a monthly budget to set spending caps and improve your savings discipline."
+        )
+
+    category_totals = {}
+    for exp in expenses:
+        category_totals[exp.category] = category_totals.get(exp.category, 0.0) + exp.amount
+
+    sorted_cats = sorted(category_totals.items(), key=lambda x: x[1], reverse=True)
+    if sorted_cats and total_all_expenses > 0:
+        top_cat, top_amt = sorted_cats[0]
+        top_pct = round((top_amt / total_all_expenses) * 100, 1)
+        if top_pct >= 35.0:
+            budget_recommendations.append(
+                f"Category Recommendation: {top_cat} accounts for {top_pct}% of your total expenses (₹{top_amt:,.0f}). Consider capping {top_cat} expenses to increase net savings."
+            )
+
+    if curr_m_savings > 0:
+        budget_recommendations.append(
+            f"Savings Allocation: You have saved ₹{curr_m_savings:,.0f} this month ({savings_pct}% of income). Allocating 50% toward active goals will accelerate completion."
+        )
+
+    # 6. AI Insights (Rule-Based & Explainable)
+    ai_insights = []
+    if sorted_cats and total_all_expenses > 0:
+        ai_insights.append(
+            f"Top Category: {sorted_cats[0][0]} is your largest expense category at ₹{sorted_cats[0][1]:,.0f} ({round(sorted_cats[0][1]/total_all_expenses*100, 1)}% of total)."
+        )
+
+    if prev_m_expense > 0:
+        if mom_expense_change_pct > 0:
+            ai_insights.append(
+                f"Spending Trajectory: Monthly expenses increased by {mom_expense_change_pct}% compared with previous month (₹{curr_m_expense:,.0f} vs ₹{prev_m_expense:,.0f})."
+            )
+        elif mom_expense_change_pct < 0:
+            ai_insights.append(
+                f"Spending Trajectory: Excellent! Monthly expenses reduced by {abs(mom_expense_change_pct)}% compared with previous month."
+            )
+    elif curr_m_expense > 0:
+        ai_insights.append(f"Current Month Spending: Total recorded expenses for this month stand at ₹{curr_m_expense:,.0f}.")
+
+    if active_goals:
+        top_goal = active_goals[0]
+        g_prog = round((top_goal.current_amount / top_goal.target_amount) * 100, 1) if top_goal.target_amount > 0 else 0.0
+        ai_insights.append(
+            f"Goal Progress: '{top_goal.goal_name}' is currently {g_prog}% achieved (₹{top_goal.current_amount:,.0f} of ₹{top_goal.target_amount:,.0f})."
+        )
+
+    if curr_m_income > 0:
+        ai_insights.append(
+            f"Income & Savings Balance: Net monthly savings rate is currently {savings_pct}% of total income."
+        )
+
+    return {
+        "curr_m_savings": curr_m_savings,
+        "savings_pct": savings_pct,
+        "curr_m_income": curr_m_income,
+        "curr_m_expense": curr_m_expense,
+        "prev_m_expense": prev_m_expense,
+        "has_prev_data": has_prev_data,
+        "mom_expense_change_pct": mom_expense_change_pct,
+        "avg_monthly_expenses": avg_monthly_expenses,
+        "projected_month_end_balance": projected_month_end_balance,
+        "total_accounts_balance": total_accounts_balance,
+        "active_goals_count": active_goals_count,
+        "active_goals": active_goals,
+        "budget_recommendations": budget_recommendations,
+        "ai_insights": ai_insights
+    }
+
+
+def get_goal_expense_analytics(user_id):
+    """
+    Computes real Expense-to-Goal Analytics:
+    1. Per Goal Expense Metrics (Total linked expenses, Count, Avg amount, Latest date)
+    2. Goal vs Expense Visualizations (Goal-Linked Expenses by Goal, Goal-linked vs Regular Non-goal expenses)
+    3. Monthly Goal-Linked Expense Trend (Last 6 Months)
+    4. Smart Dashboard Goal-Expense metrics
+    """
+    today = date.today()
+    goals = Goal.query.filter_by(user_id=user_id).all()
+    all_expenses = Expense.query.filter_by(user_id=user_id).all()
+
+    goal_analysis_list = []
+    goal_names = []
+    goal_linked_totals = []
+    total_all_goal_linked = 0.0
+
+    most_expensive_goal_name = "None"
+    max_goal_expense_amt = -1.0
+    latest_goal_expense_obj = None
+
+    for g in goals:
+        linked_exp = [e for e in all_expenses if e.goal_id == g.id]
+        linked_exp.sort(key=lambda x: x.expense_date or date.min, reverse=True)
+
+        total_amt = sum(e.amount for e in linked_exp)
+        count_exp = len(linked_exp)
+        avg_amt = round(total_amt / count_exp, 2) if count_exp > 0 else 0.0
+        latest_date_str = linked_exp[0].expense_date.strftime("%d %b %Y") if count_exp > 0 and linked_exp[0].expense_date else "N/A"
+
+        if count_exp > 0:
+            if not latest_goal_expense_obj or (linked_exp[0].expense_date and linked_exp[0].expense_date > (latest_goal_expense_obj.expense_date or date.min)):
+                latest_goal_expense_obj = linked_exp[0]
+
+        if total_amt > max_goal_expense_amt and total_amt > 0:
+            max_goal_expense_amt = total_amt
+            most_expensive_goal_name = g.goal_name
+
+        total_all_goal_linked += total_amt
+
+        goal_analysis_list.append({
+            "goal": g,
+            "total_expenses": total_amt,
+            "count_expenses": count_exp,
+            "avg_expense": avg_amt,
+            "latest_date": latest_date_str
+        })
+
+        if total_amt > 0 or len(goals) <= 5:
+            goal_names.append(g.goal_name)
+            goal_linked_totals.append(float(total_amt))
+
+    total_all_expenses = sum(e.amount for e in all_expenses)
+    total_regular_expenses = max(0.0, total_all_expenses - total_all_goal_linked)
+
+    goals_with_expenses_count = sum(1 for item in goal_analysis_list if item["count_expenses"] > 0)
+
+    # Monthly Goal-Linked Expense Trend (Last 6 Months)
+    month_labels = []
+    monthly_goal_expenses = []
+    for i in range(5, -1, -1):
+        m_start = get_first_day_of_month(today, i)
+        m_end = get_last_day_of_month(m_start)
+        m_label = m_start.strftime("%b %Y")
+        
+        m_sum = sum(
+            e.amount for e in all_expenses
+            if e.goal_id and e.expense_date and m_start <= e.expense_date <= m_end
+        )
+        month_labels.append(m_label)
+        monthly_goal_expenses.append(float(m_sum))
+
+    return {
+        "goal_analysis_list": goal_analysis_list,
+        "goal_names": goal_names,
+        "goal_linked_totals": goal_linked_totals,
+        "total_all_goal_linked": float(total_all_goal_linked),
+        "total_regular_expenses": float(total_regular_expenses),
+        "total_all_expenses": float(total_all_expenses),
+        "goals_with_expenses_count": goals_with_expenses_count,
+        "most_expensive_goal_name": most_expensive_goal_name,
+        "most_expensive_goal_amt": float(max_goal_expense_amt) if max_goal_expense_amt > 0 else 0.0,
+        "latest_goal_expense": latest_goal_expense_obj,
+        "monthly_trend_labels": month_labels,
+        "monthly_trend_amounts": monthly_goal_expenses
+    }
+
+
+def calculate_financial_health_score(user_id):
+    """
+    Dynamically calculates the Financial Health Score (0-100) based on 5 financial pillars:
+    1. Net Savings Rate (25 pts)
+    2. Budget Health & Utilization (25 pts)
+    3. Goal Progress & Achievement (20 pts)
+    4. Spending Pattern & Category Concentration (15 pts)
+    5. Financial Risk & Unread Alerts (15 pts)
+    """
+    from models.alert import FinancialAlert
+
+    incomes = Income.query.filter_by(user_id=user_id).all()
+    expenses = Expense.query.filter_by(user_id=user_id).all()
+    goals = Goal.query.filter_by(user_id=user_id).all()
+    active_budget = Budget.query.filter_by(user_id=user_id).order_by(Budget.created_at.desc()).first()
+    unread_alerts = FinancialAlert.query.filter_by(user_id=user_id, is_read=False).all()
+
+    total_income = sum(inc.amount for inc in incomes)
+    total_expenses = sum(exp.amount for exp in expenses)
+    total_savings = total_income - total_expenses
+
+    breakdown = []
+
+    # 1. Net Savings Rate (Max 25 Pts)
+    if total_income > 0:
+        savings_rate = round((total_savings / total_income) * 100, 1)
+        if savings_rate >= 30.0:
+            savings_score = 25
+            savings_note = f"Excellent net savings rate ({savings_rate}% of income)."
+        elif savings_rate >= 20.0:
+            savings_score = 20
+            savings_note = f"Good net savings rate ({savings_rate}% of income)."
+        elif savings_rate >= 10.0:
+            savings_score = 15
+            savings_note = f"Moderate net savings rate ({savings_rate}% of income)."
+        elif savings_rate >= 0.0:
+            savings_score = 10
+            savings_note = f"Low net savings rate ({savings_rate}% of income)."
+        else:
+            savings_score = 0
+            savings_note = f"Warning: Overspending detected (Net savings rate is {savings_rate}%)."
+    else:
+        if total_expenses > 0:
+            savings_score = 0
+            savings_note = "Expenses recorded without any income."
+        else:
+            savings_score = 15
+            savings_note = "No income/expense records yet (Neutral balance)."
+
+    breakdown.append({
+        "pillar": "Net Savings",
+        "score": savings_score,
+        "max_score": 25,
+        "note": savings_note
+    })
+
+    # 2. Budget Health (Max 25 Pts)
+    if active_budget and active_budget.monthly_budget > 0:
+        budget_limit = active_budget.monthly_budget
+        budget_used_pct = round((total_expenses / budget_limit) * 100, 1)
+        if budget_used_pct <= 70.0:
+            budget_score = 25
+            budget_note = f"Excellent budget utilization ({budget_used_pct}% used)."
+        elif budget_used_pct <= 85.0:
+            budget_score = 20
+            budget_note = f"Good budget control ({budget_used_pct}% used)."
+        elif budget_used_pct <= 100.0:
+            budget_score = 12
+            budget_note = f"Budget near limit ({budget_used_pct}% used)."
+        elif budget_used_pct <= 120.0:
+            budget_score = 5
+            budget_note = f"Budget exceeded by {round(budget_used_pct - 100, 1)}%."
+        else:
+            budget_score = 0
+            budget_note = f"Severe budget overrun ({budget_used_pct}% used)."
+    else:
+        budget_score = 15
+        budget_note = "No active monthly budget set."
+
+    breakdown.append({
+        "pillar": "Budget Health",
+        "score": budget_score,
+        "max_score": 25,
+        "note": budget_note
+    })
+
+    # 3. Goal Progress (Max 20 Pts)
+    if goals:
+        progresses = []
+        for g in goals:
+            p = (g.current_amount / g.target_amount * 100) if g.target_amount > 0 else 0.0
+            progresses.append(min(100.0, p))
+        avg_progress = round(sum(progresses) / len(progresses), 1)
+
+        if avg_progress >= 75.0:
+            goal_score = 20
+            goal_note = f"High goal completion progress (Avg: {avg_progress}%)."
+        elif avg_progress >= 50.0:
+            goal_score = 16
+            goal_note = f"Good goal progress (Avg: {avg_progress}%)."
+        elif avg_progress >= 25.0:
+            goal_score = 12
+            goal_note = f"Moderate goal progress (Avg: {avg_progress}%)."
+        elif avg_progress > 0.0:
+            goal_score = 8
+            goal_note = f"Early goal progress (Avg: {avg_progress}%)."
+        else:
+            goal_score = 5
+            goal_note = "Goal progress has not started yet (0%)."
+    else:
+        goal_score = 10
+        goal_note = "No financial goals created yet."
+
+    breakdown.append({
+        "pillar": "Goal Progress",
+        "score": goal_score,
+        "max_score": 20,
+        "note": goal_note
+    })
+
+    # 4. Spending Pattern (Max 15 Pts)
+    if total_expenses > 0:
+        cat_totals = {}
+        for e in expenses:
+            cat_totals[e.category] = cat_totals.get(e.category, 0.0) + e.amount
+        top_cat_amt = max(cat_totals.values())
+        top_cat_name = [k for k, v in cat_totals.items() if v == top_cat_amt][0]
+        top_cat_pct = round((top_cat_amt / total_expenses) * 100, 1)
+
+        if top_cat_pct <= 30.0:
+            spending_score = 15
+            spending_note = f"Well-balanced category spending (Top: {top_cat_name} at {top_cat_pct}%)."
+        elif top_cat_pct <= 45.0:
+            spending_score = 12
+            spending_note = f"Moderate category concentration ({top_cat_name} is {top_cat_pct}%)."
+        elif top_cat_pct <= 60.0:
+            spending_score = 7
+            spending_note = f"High category concentration ({top_cat_name} is {top_cat_pct}%)."
+        else:
+            spending_score = 2
+            spending_note = f"Heavy category overconcentration ({top_cat_name} is {top_cat_pct}%)."
+    else:
+        spending_score = 15
+        spending_note = "No expense data recorded."
+
+    breakdown.append({
+        "pillar": "Spending Pattern",
+        "score": spending_score,
+        "max_score": 15,
+        "note": spending_note
+    })
+
+    # 5. Financial Risk & Alerts (Max 15 Pts)
+    danger_alerts = sum(1 for a in unread_alerts if a.severity == "danger")
+    warning_alerts = sum(1 for a in unread_alerts if a.severity == "warning")
+
+    deductions = (danger_alerts * 5) + (warning_alerts * 3)
+    risk_score = max(0, 15 - deductions)
+
+    if danger_alerts == 0 and warning_alerts == 0:
+        risk_note = "No active warning or critical alerts."
+    else:
+        risk_note = f"Active risk alerts detected: {warning_alerts} warning(s), {danger_alerts} critical (-{deductions} pts)."
+
+    breakdown.append({
+        "pillar": "Financial Risk & Alerts",
+        "score": risk_score,
+        "max_score": 15,
+        "note": risk_note
+    })
+
+    # -------------------------------------------------------------
+    # POSITIVE FACTORS, AREAS FOR IMPROVEMENT & RECOMMENDATIONS
+    # -------------------------------------------------------------
+    positive_factors = []
+    areas_for_improvement = []
+    recommendations = []
+
+    # Savings Pillar
+    if savings_score >= 20:
+        positive_factors.append(f"Strong Net Savings: {savings_note}")
+    else:
+        areas_for_improvement.append(f"Low Savings Margin: {savings_note}")
+        recommendations.append("Increase your monthly savings margin by reviewing and reducing non-essential expenses.")
+
+    # Budget Pillar
+    if budget_score >= 20:
+        positive_factors.append(f"Healthy Budget Control: {budget_note}")
+    else:
+        areas_for_improvement.append(f"Budget Utilization Concern: {budget_note}")
+        recommendations.append("Review category caps and adjust your monthly budget limit to maintain buffer.")
+
+    # Goal Pillar
+    if goal_score >= 16:
+        positive_factors.append(f"Solid Goal Progress: {goal_note}")
+    else:
+        areas_for_improvement.append(f"Slow Goal Advancement: {goal_note}")
+        recommendations.append("Allocate a portion of net savings regularly toward active financial goals.")
+
+    # Spending Pattern Pillar
+    if spending_score >= 12:
+        positive_factors.append(f"Balanced Spending Diversification: {spending_note}")
+    else:
+        areas_for_improvement.append(f"Category Spending Concentration: {spending_note}")
+        recommendations.append("Set category caps on your highest spending category to balance monthly expenses.")
+
+    # Risk & Alerts Pillar
+    if risk_score == 15:
+        positive_factors.append("Clean Financial Alert Status: Zero active warning or critical alerts.")
+    else:
+        areas_for_improvement.append(f"Unresolved Risk Alerts: {risk_note}")
+        recommendations.append("Review and mark read active financial alerts on the Alert Dashboard.")
+
+    total_health_score = savings_score + budget_score + goal_score + spending_score + risk_score
+
+    if total_health_score >= 80:
+        status_label = "Excellent"
+        status_class = "excellent"
+        summary_explanation = f"Your Financial Health Score is {total_health_score}/100. Excellent financial discipline across savings, budget, and goal tracking!"
+    elif total_health_score >= 60:
+        status_label = "Stable"
+        status_class = "stable"
+        summary_explanation = f"Your Financial Health Score is {total_health_score}/100. Stable overall finances. Small optimizations in budget control or goals will increase your score."
+    elif total_health_score >= 40:
+        status_label = "Needs Attention"
+        status_class = "attention"
+        summary_explanation = f"Your Financial Health Score is {total_health_score}/100. Financial management needs attention due to budget utilization, category concentration, or active alerts."
+    else:
+        status_label = "At Risk"
+        status_class = "risk"
+        summary_explanation = f"Your Financial Health Score is {total_health_score}/100. Financial status is at risk of strain due to high expenses, over-budget spending, or critical risk alerts."
+
+    return {
+        "score": total_health_score,
+        "max_score": 100,
+        "status_label": status_label,
+        "status_class": status_class,
+        "summary_explanation": summary_explanation,
+        "breakdown": breakdown,
+        "savings_score": savings_score,
+        "budget_score": budget_score,
+        "goal_score": goal_score,
+        "spending_score": spending_score,
+        "risk_score": risk_score,
+        "positive_factors": positive_factors,
+        "areas_for_improvement": areas_for_improvement,
+        "recommendations": recommendations
+    }
