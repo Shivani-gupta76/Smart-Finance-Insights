@@ -4,7 +4,7 @@
 
 .budget-card{
     background:white;
-    max-width:500px;
+    max-width:550px;
     padding:30px;
     border-radius:12px;
     box-shadow:0 4px 12px rgba(0,0,0,.08);
@@ -22,13 +22,29 @@
     display:block;
     margin-bottom:8px;
     font-weight:600;
+    color:#374151;
 }
 
-.form-group input{
+.form-group input, .form-group select{
     width:100%;
     padding:10px;
     border:1px solid #ccc;
     border-radius:8px;
+    font-family:inherit;
+    font-size:14px;
+    box-sizing:border-box;
+}
+
+.form-group select:focus, .form-group input:focus{
+    outline:none;
+    border-color:#2563eb;
+}
+
+.budget-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
 }
 
 .btn-save{
@@ -39,8 +55,49 @@
     border-radius:8px;
     cursor:pointer;
     font-size:15px;
+    font-weight:600;
 }
 
 .btn-save:hover{
     background:#1d4ed8;
+}
+
+.btn-delete{
+    background:#ef4444;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+    text-decoration:none;
+    display:inline-block;
+}
+
+.btn-delete:hover{
+    background:#dc2626;
+}
+
+.linked-goal-badge {
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    color: #1e40af;
+}
+
+.linked-goal-badge h4 {
+    margin: 0 0 6px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.linked-goal-badge p {
+    margin: 0;
+    font-size: 13px;
+    color: #3b82f6;
 }

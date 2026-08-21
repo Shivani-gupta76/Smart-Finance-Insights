@@ -28,21 +28,21 @@
         <ul class="menu">
 
             <li>
-                <a href="{{ url_for('dashboard') }}">
+                <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
                     <i class="fa-solid fa-house"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{ url_for('expense.expenses') }}">
+                <a href="{{ url_for('expense.expenses') }}" class="{% if request.endpoint and request.endpoint.startswith('expense') %}active{% endif %}">
                     <i class="fa-solid fa-wallet"></i>
                     <span>Expenses</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{ url_for('income.incomes') }}">
+                <a href="{{ url_for('income.incomes') }}" class="{% if request.endpoint and request.endpoint.startswith('income') %}active{% endif %}">
                     <i class="fa-solid fa-money-bill-wave"></i>
                     <span>Income</span>
                 </a>
@@ -50,37 +50,44 @@
 
             <!-- Accounts -->
             <li>
-                <a href="{{ url_for('account.accounts') }}">
+                <a href="{{ url_for('account.accounts') }}" class="{% if request.endpoint and request.endpoint.startswith('account') %}active{% endif %}">
                     <i class="fa-solid fa-building-columns"></i>
                     <span>Accounts</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{ url_for('budget.budgets') }}">
+                <a href="{{ url_for('budget.budgets') }}" class="{% if request.endpoint and request.endpoint.startswith('budget') %}active{% endif %}">
                     <i class="fa-solid fa-bullseye"></i>
                     <span>Budget</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{ url_for('profile.view_profile') }}">
-                    <i class="fa-solid fa-user"></i>
-                    <span>Profile</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="{{ url_for('investment.investments') }}">
+                <a href="{{ url_for('investment.investments') }}" class="{% if request.endpoint and request.endpoint.startswith('investment') %}active{% endif %}">
                     <i class="fa-solid fa-chart-line"></i>
                     <span>Investments</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{ url_for('goal.goals') }}">
+                <a href="{{ url_for('goal.goals') }}" class="{% if request.endpoint and request.endpoint.startswith('goal') %}active{% endif %}">
                     <i class="fa-solid fa-bullseye"></i>
                     <span>Goals</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('analytics.analytics') }}" class="{% if request.endpoint and request.endpoint.startswith('analytics') %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('profile.view_profile') }}" class="{% if request.endpoint and request.endpoint.startswith('profile') %}active{% endif %}">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Profile</span>
                 </a>
             </li>
 
