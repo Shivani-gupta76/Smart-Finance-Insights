@@ -424,12 +424,39 @@ def goal_details(id):
         part_progress = 0
 
     # -----------------------------------------------------
-    # LINKED BUDGET
+    # DIRECT GOAL-LINKED EXPENSES & BUDGET RELATIONSHIP
     # -----------------------------------------------------
+    from models.expense import Expense
+
+    goal_linked_expenses = Expense.query.filter_by(
+        goal_id=goal_data.id,
+        user_id=current_user.id
+    ).order_by(Expense.expense_date.desc()).all()
+
+    total_goal_linked_expenses = sum(e.amount for e in goal_linked_expenses)
+    count_goal_linked_expenses = len(goal_linked_expenses)
+
     linked_budget = Budget.query.filter_by(
         goal_id=goal_data.id,
         user_id=current_user.id
     ).first()
+
+    budget_actual_spent = 0.0
+    budget_remaining = 0.0
+    budget_usage_pct = 0.0
+    related_expenses = goal_linked_expenses
+
+    if linked_budget:
+        all_user_exp = Expense.query.filter_by(user_id=current_user.id).all()
+        if goal_data.category:
+            cat_exp = [e for e in all_user_exp if e.category.lower() == goal_data.category.lower()]
+            budget_actual_spent = sum(e.amount for e in cat_exp)
+        else:
+            budget_actual_spent = sum(e.amount for e in all_user_exp)
+
+        budget_remaining = max(0.0, linked_budget.monthly_budget - budget_actual_spent)
+        if linked_budget.monthly_budget > 0:
+            budget_usage_pct = round((budget_actual_spent / linked_budget.monthly_budget) * 100, 1)
 
     # -----------------------------------------------------
     # RENDER
@@ -437,30 +464,25 @@ def goal_details(id):
 
     return render_template(
         "goal_details.html",
-
         goal=goal_data,
-
         parts=parts,
-
         total_parts=total_parts,
-
         completed_parts=completed_parts,
-
         in_progress_parts=in_progress_parts,
-
         pending_parts=pending_parts,
-
         estimated_total=estimated_total,
-
         actual_total=actual_total,
-
         cost_variance=cost_variance,
-
         part_progress=part_progress,
-
         edit_part=edit_part,
-
-        linked_budget=linked_budget
+        linked_budget=linked_budget,
+        budget_actual_spent=budget_actual_spent,
+        budget_remaining=budget_remaining,
+        budget_usage_pct=budget_usage_pct,
+        related_expenses=related_expenses,
+        goal_linked_expenses=goal_linked_expenses,
+        total_goal_linked_expenses=total_goal_linked_expenses,
+        count_goal_linked_expenses=count_goal_linked_expenses
     )
 
 # =========================================================
