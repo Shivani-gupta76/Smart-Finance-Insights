@@ -41,11 +41,9 @@ class Account(db.Model):
 
     # Relationship with Expense
     expenses = db.relationship(
-        "Expense",
-        back_populates="account",
-        cascade="all, delete-orphan",
-        lazy=True
-    )
+    "Expense",
+    back_populates="account"
+)
 
     def __repr__(self):
         return f"<Account {self.account_name}>"
