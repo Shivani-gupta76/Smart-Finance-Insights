@@ -62,26 +62,25 @@ class Expense(db.Model):
         index=True
     )
 
-    # Optional relationship with Financial Goal
-    goal_id = db.Column(
-        db.Integer,
-        db.ForeignKey("goals.id"),
-        nullable=True,
-        index=True
-    )
+# Optional relationship with Financial Goal
+goal_id = db.Column(
+    db.Integer,
+    db.ForeignKey("goals.id"),
+    nullable=True,
+    index=True
+)
 
+# Relationship with Account
+account = db.relationship(
+    "Account",
+    back_populates="expenses"
+)
 
-    # Relationship with Account
-    account = db.relationship(
-        "Account",
-        back_populates="expenses"
-    )
+# Relationship with Goal
+goal = db.relationship(
+    "Goal",
+    back_populates="expenses"
+)
 
-    # Relationship with Goal
-    goal = db.relationship(
-        "Goal",
-        back_populates="expenses"
-    )
-
-    def __repr__(self):
-        return f"<Expense {self.title}>"
+def __repr__(self):
+    return f"<Expense {self.title}>"

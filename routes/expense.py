@@ -71,6 +71,8 @@ def expenses():
             except (ValueError, TypeError):
                 goal_id = None
 
+       
+
         account = Account.query.filter_by(
             id=account_id,
             user_id=current_user.id
@@ -125,8 +127,11 @@ def delete_expense(id):
     ).first_or_404()
 
     # Restore account balance
+
     if expense_obj.account:
         expense_obj.account.balance += expense_obj.amount
+
+    
 
     db.session.delete(expense_obj)
     db.session.commit()
@@ -154,6 +159,7 @@ def edit_expense(id):
 
     if request.method == "POST":
 
+
         amount_raw = request.form.get("amount")
         account_id_raw = request.form.get("account_id")
         expense_date_raw = request.form.get("expense_date")
@@ -179,6 +185,7 @@ def edit_expense(id):
             flash("Invalid expense date format.", "danger")
             return redirect(url_for("expense.edit_expense", id=id))
 
+
         old_account = expense_obj.account
         old_amount = expense_obj.amount
 
@@ -195,17 +202,23 @@ def edit_expense(id):
             flash("Selected account not found or access denied.", "danger")
             return redirect(url_for("expense.edit_expense", id=id))
 
-        # Deduct from selected account
+                # Deduct from selected account
         new_account.balance -= new_amount
 
         goal_id_val = request.form.get("goal_id")
         goal_id = None
+
         if goal_id_val and goal_id_val.strip() and goal_id_val != "none" and goal_id_val != "0":
             try:
                 gid = int(goal_id_val)
-                g_check = Goal.query.filter_by(id=gid, user_id=current_user.id).first()
+                g_check = Goal.query.filter_by(
+                    id=gid,
+                    user_id=current_user.id
+                ).first()
+
                 if g_check:
                     goal_id = gid
+
             except (ValueError, TypeError):
                 goal_id = None
 
@@ -220,12 +233,6 @@ def edit_expense(id):
 
         db.session.commit()
         flash("Expense updated successfully.", "success")
-        
         return redirect(url_for("expense.expenses"))
 
-    return render_template(
-        "edit_expense.html",
-        expense=expense_obj,
-        accounts=accounts,
-        goals=goals
-    )
+

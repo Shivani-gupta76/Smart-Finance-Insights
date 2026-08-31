@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
+
 from datetime import datetime
+
+
 from extensions import db
 from models.alert import FinancialAlert
 from services.alert_service import check_and_create_alerts, mark_alert_as_read
@@ -15,6 +18,7 @@ def alerts():
 
     # 1. Trigger Alert Check
     check_and_create_alerts(user_id)
+
 
     # 2. Date & Type Filter Handling
     from_date_str = request.args.get("from_date", "").strip()
@@ -39,6 +43,8 @@ def alerts():
 
     all_user_alerts = query.order_by(FinancialAlert.created_at.desc()).all()
 
+
+
     # 3. Calculate Summary Statistics
     total_alerts = len(all_user_alerts)
     unread_alerts = sum(1 for a in all_user_alerts if not a.is_read)
@@ -55,6 +61,7 @@ def alerts():
     elif active_filter == "goal":
         filtered_alerts = [a for a in all_user_alerts if "goal" in a.alert_type.lower() or "goal" in a.title.lower()]
     elif active_filter == "spending":
+
         filtered_alerts = [
             a for a in all_user_alerts
             if "spending" in a.alert_type.lower()
@@ -63,6 +70,9 @@ def alerts():
             or "savings" in a.title.lower()
             or "balance" in a.title.lower()
         ]
+
+        
+
     elif active_filter == "critical":
         filtered_alerts = [a for a in all_user_alerts if a.severity in ["danger", "critical"]]
     else:
@@ -72,8 +82,11 @@ def alerts():
         "alerts.html",
         alerts=filtered_alerts,
         active_filter=active_filter,
+
         from_date=from_date_str,
         to_date=to_date_str,
+
+
         total_alerts=total_alerts,
         unread_alerts=unread_alerts,
         critical_alerts=critical_alerts,

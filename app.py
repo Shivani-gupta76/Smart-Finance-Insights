@@ -63,9 +63,21 @@ def load_user(user_id):
 def inject_global_vars():
     if current_user.is_authenticated:
         unread_count = FinancialAlert.query.filter_by(user_id=current_user.id, is_read=False).count()
-        recent_alerts = FinancialAlert.query.filter_by(user_id=current_user.id).order_by(FinancialAlert.created_at.desc()).limit(15).all()
-        return dict(unread_alerts_count=unread_count, global_recent_alerts=recent_alerts)
-    return dict(unread_alerts_count=0, global_recent_alerts=[])
+        recent_alerts = FinancialAlert.query.filter_by(
+            user_id=current_user.id
+        ).order_by(
+            FinancialAlert.created_at.desc()
+        ).limit(15).all()
+
+        return dict(
+            unread_alerts_count=unread_count,
+            global_recent_alerts=recent_alerts
+        )
+    else:
+        return dict(
+            unread_alerts_count=0,
+            global_recent_alerts=[]
+        )
 
 
 # Register Blueprints
@@ -80,6 +92,7 @@ app.register_blueprint(goal)
 app.register_blueprint(analytics_bp)
 app.register_blueprint(alert_bp)
 app.register_blueprint(reports_bp)
+
 
 
 # Home Page
@@ -118,6 +131,7 @@ def init_db_schema():
                     with db.engine.begin() as conn:
                         conn.execute(text("ALTER TABLE expenses ADD COLUMN goal_id INTEGER REFERENCES goals(id)"))
 
+
             # Milestone 4 Performance Optimization: Add Database Indexes
             with db.engine.begin() as conn:
                 conn.execute(text("CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses (user_id, expense_date)"))
@@ -130,6 +144,8 @@ def init_db_schema():
                 conn.execute(text("CREATE INDEX IF NOT EXISTS idx_alerts_user_unread ON financial_alerts (user_id, is_read)"))
                 conn.execute(text("CREATE INDEX IF NOT EXISTS idx_accounts_user ON accounts (user_id)"))
                 conn.execute(text("CREATE INDEX IF NOT EXISTS idx_investments_user ON investments (user_id)"))
+
+
         except Exception as e:
             app.logger.warning(f"Schema check warning: {e}")
 
@@ -212,7 +228,15 @@ def dashboard():
 
     spending_analysis = get_spending_analysis(current_user.id)
     spending_trend = get_monthly_spending_trend(current_user.id, num_months=6)
+
     check_and_create_alerts(current_user.id)
+
+
+    # 3. Financial Event Alerts Evaluation
+    check_and_create_alerts(current_user.id)
+
+    # 4. Expense-to-Goal Relationship Analytics
+
     goal_expense_analytics = get_goal_expense_analytics(current_user.id)
 
     return render_template(

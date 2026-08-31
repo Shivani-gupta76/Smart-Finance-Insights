@@ -42,9 +42,13 @@ def check_and_create_alerts(user_id):
 
     # 1. Budget Alerts (80% and 100% per budget)
     budgets = Budget.query.filter_by(user_id=user_id).all()
+
     user_expenses = Expense.query.filter_by(user_id=user_id).all()
     first_day_curr = date(today.year, today.month, 1)
     curr_m_exp = [e for e in user_expenses if e.expense_date and e.expense_date >= first_day_curr]
+
+    
+
 
     # Map budget amounts to categories for realistic presentation alert labels
     category_budget_map = {
@@ -57,22 +61,32 @@ def check_and_create_alerts(user_id):
     for b in budgets:
         if b.goal and b.goal.category:
             cat_key = b.goal.category.lower()
-            cat_spent = sum(e.amount for e in curr_m_exp if e.category.lower() == cat_key)
+            cat_spent = sum(
+                e.amount for e in curr_m_exp
+                if e.category.lower() == cat_key
+            )
+
             if b.monthly_budget > 0 and (cat_spent / b.monthly_budget) >= 0.8:
                 b_cat_label = f"{b.goal.category} Budget"
                 total_spent = cat_spent
             else:
                 b_cat_label = f"{b.month} {b.year} budget"
                 total_spent = sum(e.amount for e in curr_m_exp)
+
         elif b.monthly_budget in category_budget_map:
             label_name, cat_key = category_budget_map[b.monthly_budget]
-            cat_spent = sum(e.amount for e in curr_m_exp if e.category.lower() == cat_key.lower())
+            cat_spent = sum(
+                e.amount for e in curr_m_exp
+                if e.category.lower() == cat_key.lower()
+            )
+
             if b.monthly_budget > 0 and (cat_spent / b.monthly_budget) >= 0.8:
                 b_cat_label = f"{label_name} budget"
                 total_spent = cat_spent
             else:
                 b_cat_label = f"{b.month} {b.year} budget"
                 total_spent = sum(e.amount for e in curr_m_exp)
+
         else:
             b_cat_label = f"{b.month} {b.year} budget"
             total_spent = sum(e.amount for e in curr_m_exp)
@@ -80,6 +94,7 @@ def check_and_create_alerts(user_id):
         if b.monthly_budget > 0:
             usage_pct = (total_spent / b.monthly_budget) * 100
             rem_or_over = abs(total_spent - b.monthly_budget)
+
             if usage_pct >= 100:
                 add_alert_if_not_exists(
                     alert_type=f"budget_exceeded_{b.id}",
@@ -87,6 +102,7 @@ def check_and_create_alerts(user_id):
                     message=f"You have exceeded your {b_cat_label} by ₹{rem_or_over:,.0f}.",
                     severity="danger"
                 )
+
             elif usage_pct >= 80:
                 add_alert_if_not_exists(
                     alert_type=f"budget_warning_{b.id}",

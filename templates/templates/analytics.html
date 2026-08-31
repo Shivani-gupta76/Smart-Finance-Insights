@@ -1,0 +1,860 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Finance Analytics Platform for Financial Reporting and Budget Tracking
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .analytics-container {
+        padding: 24px;
+        max-width: 1240px;
+        margin: 0 auto;
+    }
+
+    .platform-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .platform-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0 0 6px 0;
+    }
+
+    .platform-header p {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    /* Top Navigation Tabs */
+    .analytics-tabs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 2px solid #E2E8F0;
+        margin-bottom: 24px;
+    }
+
+    .tab-btn {
+        padding: 12px 20px;
+        border: none;
+        background: transparent;
+        color: #64748B;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+        color: #2563EB;
+    }
+
+    .tab-btn.active {
+        color: #2563EB;
+        border-bottom-color: #2563EB;
+        background: #EFF6FF;
+        border_radius: 8px 8px 0 0;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Filters */
+    .filter-btn-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .filter-btn {
+        padding: 5px 12px;
+        border-radius: 15px;
+        border: 1px solid #CBD5E1;
+        background: #ffffff;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .filter-btn.active {
+        background: #2563EB;
+        color: #ffffff;
+        border-color: #2563EB;
+    }
+
+    /* Section Cards */
+    .section-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        margin-bottom: 24px;
+    }
+
+    .section-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+
+    .section-card-header h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Grid Layouts */
+    .grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .grid-4col {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+        .grid-2col { grid-template-columns: 1fr; }
+    }
+
+    .badge-status {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .badge-status.healthy { background: #DCFCE7; color: #15803D; }
+    .badge-status.normal { background: #E0F2FE; color: #0369A1; }
+    .badge-status.warning { background: #FEF3C7; color: #B45309; }
+    .badge-status.exceeded { background: #FEE2E2; color: #B91C1C; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+
+    <!-- Title Header -->
+    <div class="platform-header">
+        <div>
+            <h1><i class="fa-solid fa-chart-pie"></i> Finance Analytics Platform for Financial Reporting and Budget Tracking</h1>
+            <p>Comprehensive financial reporting, spending intelligence, budget optimization, and goal progress tracking.</p>
+        </div>
+        <div class="header-badge" style="background: #EFF6FF; padding: 8px 16px; border-radius: 20px; color: #2563EB; font-weight: 600; font-size: 13px;">
+            <i class="fa-solid fa-user-check"></i> {{ current_user.full_name }}
+        </div>
+    </div>
+
+    <!-- Top Navigation Tabs -->
+    <div class="analytics-tabs">
+        <button class="tab-btn active" onclick="switchTab('overview')"><i class="fa-solid fa-gauge-high"></i> Overview</button>
+        <button class="tab-btn" onclick="switchTab('spending')"><i class="fa-solid fa-chart-pie"></i> Spending Analysis</button>
+        <button class="tab-btn" onclick="switchTab('recommendations')"><i class="fa-solid fa-lightbulb"></i> Budget Recommendations</button>
+        <button class="tab-btn" onclick="switchTab('trends')"><i class="fa-solid fa-arrow-trend-up"></i> Trends & Predictions</button>
+        <button class="tab-btn" onclick="switchTab('health')"><i class="fa-solid fa-shield-halved"></i> Financial Health Score</button>
+    </div>
+
+    <!-- =========================================================
+         TAB 1: OVERVIEW
+    ========================================================= -->
+    <div id="tab-overview" class="tab-content active">
+
+        <!-- FINANCIAL HEALTH SCORE CARD -->
+        {% if health_score %}
+        <div class="section-card" style="border-left: 5px solid {% if health_score.score >= 80 %}#16A34A{% elif health_score.score >= 60 %}#2563EB{% elif health_score.score >= 40 %}#D97706{% else %}#DC2626{% endif %};">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="width: 65px; height: 65px; border-radius: 50%; background: {% if health_score.score >= 80 %}#DCFCE7{% elif health_score.score >= 60 %}#DBEAFE{% elif health_score.score >= 40 %}#FEF3C7{% else %}#FEE2E2{% endif %}; color: {% if health_score.score >= 80 %}#16A34A{% elif health_score.score >= 60 %}#2563EB{% elif health_score.score >= 40 %}#D97706{% else %}#DC2626{% endif %}; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; line-height: 1;">
+                        <span style="font-size: 20px;">{{ health_score.score }}</span>
+                        <span style="font-size: 10px; opacity: 0.8;">/ 100</span>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 18px; margin: 0 0 4px 0; color: #0F172A; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-shield-halved" style="color: #2563EB;"></i> Dynamic Financial Health Score
+                            <span class="badge-status {% if health_score.score >= 80 %}healthy{% elif health_score.score >= 60 %}normal{% elif health_score.score >= 40 %}warning{% else %}exceeded{% endif %}">
+                                {{ health_score.status_label }}
+                            </span>
+                        </h2>
+                        <p style="margin: 0; font-size: 13px; color: #64748B;">{{ health_score.summary_explanation }}</p>
+                    </div>
+                </div>
+                <div style="min-width: 180px; flex-grow: 1; max-width: 240px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748B; margin-bottom: 6px;">
+                        <span>Health Index Gauge</span>
+                        <strong>{{ health_score.score }}%</strong>
+                    </div>
+                    <div style="width: 100%; height: 10px; background: #E2E8F0; border-radius: 10px; overflow: hidden;">
+                        <div style="height: 100%; width: {{ health_score.score }}%; background: {% if health_score.score >= 80 %}#16A34A{% elif health_score.score >= 60 %}#2563EB{% elif health_score.score >= 40 %}#D97706{% else %}#DC2626{% endif %}; border-radius: 10px; transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #E2E8F0;">
+                {% for pillar in health_score.breakdown %}
+                <div style="background: #F8FAFC; padding: 10px 14px; border-radius: 8px; border: 1px solid #F1F5F9;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                        <strong style="color: #334155;">{{ pillar.pillar }}</strong>
+                        <span style="font-weight: 700; color: #2563EB;">{{ pillar.score }}/{{ pillar.max_score }}</span>
+                    </div>
+                    <p style="margin: 0; font-size: 11px; color: #64748B;">{{ pillar.note }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 1. TOP 4 OVERVIEW SUMMARY CARDS -->
+        <div class="grid-4col">
+            <!-- Monthly Savings -->
+            <div class="summary-card">
+                <div class="card-icon savings"><i class="fa-solid fa-piggy-bank"></i></div>
+                <div class="card-info">
+                    <span class="label">Monthly Savings</span>
+                    <span class="value" style="color: {% if rebuilt_data.curr_m_savings >= 0 %}#16A34A{% else %}#DC2626{% endif %};">
+                        ₹{{ "{:,.0f}".format(rebuilt_data.curr_m_savings) }}
+                    </span>
+                    <span class="subtext">
+                        {{ rebuilt_data.savings_pct }}% of income | MoM: {% if rebuilt_data.has_prev_data %}{% if rebuilt_data.mom_expense_change_pct > 0 %}+{{ rebuilt_data.mom_expense_change_pct }}%{% else %}{{ rebuilt_data.mom_expense_change_pct }}%{% endif %}{% else %}N/A{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Avg Monthly Expenses -->
+            <div class="summary-card">
+                <div class="card-icon expense"><i class="fa-solid fa-receipt"></i></div>
+                <div class="card-info">
+                    <span class="label">Avg. Monthly Expenses</span>
+                    <span class="value">₹{{ "{:,.0f}".format(rebuilt_data.avg_monthly_expenses) }}</span>
+                    <span class="subtext">Current Month: ₹{{ "{:,.0f}".format(rebuilt_data.curr_m_expense) }}</span>
+                </div>
+            </div>
+
+            <!-- Projected Month-End Balance -->
+            <div class="summary-card">
+                <div class="card-icon income"><i class="fa-solid fa-wallet"></i></div>
+                <div class="card-info">
+                    <span class="label">Projected Month-End Balance</span>
+                    <span class="value">₹{{ "{:,.0f}".format(rebuilt_data.projected_month_end_balance) }}</span>
+                    <span class="subtext">Total Bank Account Balance</span>
+                </div>
+            </div>
+
+            <!-- Active Goals -->
+            <div class="summary-card">
+                <div class="card-icon goals"><i class="fa-solid fa-bullseye"></i></div>
+                <div class="card-info">
+                    <span class="label">Active Goals</span>
+                    <span class="value">{{ rebuilt_data.active_goals_count }}</span>
+                    <span class="subtext">Top Goal: {% if rebuilt_data.active_goals %}{{ rebuilt_data.active_goals[0].goal_name }}{% else %}None{% endif %}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. CASH FLOW TREND & ALERTS PANEL -->
+        <div class="grid-2col">
+            <!-- Cash Flow Trend (Last 6 Months Line Chart) -->
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h2><i class="fa-solid fa-arrow-trend-up"></i> Cash Flow Trend</h2>
+                    <div class="filter-btn-group">
+                        <button class="filter-btn active">6 Months</button>
+                    </div>
+                </div>
+                <div style="height: 260px;">
+                    <canvas id="overviewCashFlowChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Alerts & Notifications Panel -->
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h2><i class="fa-solid fa-bell"></i> Alerts & Notifications</h2>
+                    <a href="{{ url_for('alert.alerts') }}" style="color: #2563EB; font-weight: 600; font-size: 13px; text-decoration: none;">View All &rarr;</a>
+                </div>
+                {% if alerts %}
+                    <div class="alert-list" style="max-height: 260px; overflow-y: auto;">
+                        {% for alert in alerts[:4] %}
+                        <div class="alert-item {{ alert.severity }}" style="margin-bottom: 10px; padding: 12px; border-radius: 8px; background: #F8FAFC; border-left: 4px solid #CBD5E1;">
+                            <h4 style="margin: 0 0 4px 0; font-size: 14px; color: #0F172A;">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ alert.title }}
+                            </h4>
+                            <p style="margin: 0 0 4px 0; font-size: 13px; color: #475569;">{{ alert.message }}</p>
+                            <span style="font-size: 11px; color: #94A3B8;"><i class="fa-regular fa-clock"></i> {{ alert.created_at.strftime('%d %b %Y, %I:%M %p') if alert.created_at else '' }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 40px 0; color: #16A34A;">
+                        <i class="fa-solid fa-circle-check" style="font-size: 28px; margin-bottom: 8px;"></i>
+                        <p>No active alerts. Financial status is healthy!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 3. SPENDING INTELLIGENCE / AI INSIGHTS -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Spending Intelligence & Financial Insights</h2>
+                <span class="badge badge-info">Explainable Financial Insights</span>
+            </div>
+            <div class="grid-2col">
+                {% for insight in rebuilt_data.ai_insights %}
+                <div style="background: #F8FAFC; padding: 14px 18px; border-radius: 10px; border: 1px solid #E2E8F0; display: flex; align-items: flex-start; gap: 12px;">
+                    <i class="fa-solid fa-circle-info" style="color: #2563EB; font-size: 18px; margin-top: 2px;"></i>
+                    <span style="font-size: 14px; color: #334155;">{{ insight }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+         TAB 2: SPENDING ANALYSIS
+    ========================================================= -->
+    <div id="tab-spending" class="tab-content">
+
+        <!-- 1. SPENDING PATTERN DOUGHNUT CHART -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-chart-pie"></i> Spending Pattern Analysis</h2>
+                <div class="filter-btn-group">
+                    <button class="filter-btn active">This Month</button>
+                    <button class="filter-btn">Last Month</button>
+                    <button class="filter-btn">Last 3 Months</button>
+                    <button class="filter-btn">All Time</button>
+                </div>
+            </div>
+            <div class="grid-2col">
+                <div style="height: 280px;">
+                    <canvas id="categoryDoughnutChart"></canvas>
+                </div>
+                <div>
+                    <table class="analytics-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Spent Amount</th>
+                                <th>% of Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in spending_analysis.categories %}
+                                {% set amt = spending_analysis.category_totals[cat] %}
+                                {% set pct = ((amt / spending_analysis.total_expenses * 100)|round(1)) if spending_analysis.total_expenses > 0 else 0 %}
+                                <tr>
+                                    <td><strong>{{ cat }}</strong></td>
+                                    <td>₹{{ "{:,.0f}".format(amt) }}</td>
+                                    <td>{{ pct }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. MONTHLY TREND & WEEKLY PATTERN -->
+        <div class="grid-2col">
+            <!-- Monthly Spending Trend (Last 6 Months) -->
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h2><i class="fa-solid fa-chart-bar"></i> Monthly Spending Trend (Last 6 Months)</h2>
+                </div>
+                <div style="height: 250px;">
+                    <canvas id="monthlyTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Weekly Spending Pattern (Current Month) -->
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h2><i class="fa-solid fa-calendar-week"></i> Weekly Spending Pattern (Current Month)</h2>
+                </div>
+                <div style="height: 250px;">
+                    <canvas id="weeklyPatternChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. CURRENT MONTH VS PREVIOUS MONTH COMPARISON -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-code-compare"></i> Current Month vs Previous Month Comparison</h2>
+            </div>
+            <div class="grid-4col">
+                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 13px; color: #64748B; display: block;">Current Month Spending</span>
+                    <strong style="font-size: 20px; color: #0F172A;">₹{{ "{:,.0f}".format(advanced_patterns.month_vs_prev.curr_total) }}</strong>
+                    <span style="font-size: 12px; color: #64748B; display: block; margin-top: 4px;">{{ advanced_patterns.month_vs_prev.curr_count }} transactions</span>
+                </div>
+
+                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 13px; color: #64748B; display: block;">Previous Month Spending</span>
+                    <strong style="font-size: 20px; color: #0F172A;">₹{{ "{:,.0f}".format(advanced_patterns.month_vs_prev.prev_total) }}</strong>
+                    <span style="font-size: 12px; color: #64748B; display: block; margin-top: 4px;">{{ advanced_patterns.month_vs_prev.prev_count }} transactions</span>
+                </div>
+
+                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 13px; color: #64748B; display: block;">Net Change Amount</span>
+                    <strong style="font-size: 20px; color: {% if advanced_patterns.month_vs_prev.change_amount > 0 %}#DC2626{% else %}#16A34A{% endif %};">
+                        {% if advanced_patterns.month_vs_prev.change_amount > 0 %}+{% endif %}₹{{ "{:,.0f}".format(advanced_patterns.month_vs_prev.change_amount) }}
+                    </strong>
+                </div>
+
+                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 13px; color: #64748B; display: block;">Percentage Difference</span>
+                    <strong style="font-size: 20px; color: {% if advanced_patterns.month_vs_prev.pct_change > 0 %}#DC2626{% else %}#16A34A{% endif %};">
+                        {% if advanced_patterns.month_vs_prev.has_prev_data %}
+                            {% if advanced_patterns.month_vs_prev.pct_change > 0 %}+{% endif %}{{ advanced_patterns.month_vs_prev.pct_change }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </strong>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+         TAB 3: BUDGET RECOMMENDATIONS
+    ========================================================= -->
+    <div id="tab-recommendations" class="tab-content">
+
+        <!-- 1. BUDGET ANALYTICS STATUS -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-bullseye"></i> Budget Analytics & Usage Status</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                {% for b_item in budget_analytics_list %}
+                <div style="background: #F8FAFC; border-radius: 12px; padding: 18px; border: 1px solid #E2E8F0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                        <strong style="font-size: 16px; color: #0F172A;">{{ b_item.budget.month }} {{ b_item.budget.year }} Budget</strong>
+                        <span class="badge-status {{ b_item.status_class }}">{{ b_item.status }}</span>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748B; margin-bottom: 4px;">
+                            <span>Spent: ₹{{ "{:,.0f}".format(b_item.actual_spent) }}</span>
+                            <span>Limit: ₹{{ "{:,.0f}".format(b_item.budget.monthly_budget) }}</span>
+                        </div>
+                        <div class="progress-bar-container" style="height: 8px;">
+                            <div class="progress-bar-fill" style="width: {{ b_item.usage_pct if b_item.usage_pct <= 100 else 100 }}%; background: {% if b_item.usage_pct >= 100 %}#DC2626{% elif b_item.usage_pct >= 80 %}#D97706{% else %}#16A34A{% endif %};"></div>
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #64748B; display: flex; justify-content: space-between;">
+                        <span>Usage: <strong>{{ b_item.usage_pct }}%</strong></span>
+                        <span>Remaining: <strong>₹{{ "{:,.0f}".format(b_item.rem_amount) }}</strong></span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 2. BUDGET RECOMMENDATIONS CARDS -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-lightbulb"></i> Rule-Based Budget Recommendations</h2>
+                <span class="badge badge-info">AI Powered — Rule-Based</span>
+            </div>
+            <div class="grid-2col">
+                <div style="background: #F0FDF4; border: 1px solid #BBF7D0; padding: 18px; border-radius: 12px; color: #15803D;">
+                    <h4 style="margin: 0 0 6px 0; font-size: 15px;"><i class="fa-solid fa-utensils"></i> Reduce Dining & Food Expenses</h4>
+                    <p style="margin: 0 0 8px 0; font-size: 13px;">Food spending is currently at 40% of total expenses. Capping restaurant orders could save up to ₹1,500/month.</p>
+                    <strong style="font-size: 13px;">Potential Monthly Savings: ₹1,500 | Annual: ₹18,000</strong>
+                </div>
+
+                <div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 18px; border-radius: 12px; color: #1E40AF;">
+                    <h4 style="margin: 0 0 6px 0; font-size: 15px;"><i class="fa-solid fa-bag-shopping"></i> Optimize Shopping Subscriptions</h4>
+                    <p style="margin: 0 0 8px 0; font-size: 13px;">Shopping expenses spiked by 25% this month. Consolidating non-essential purchases will restore budget buffer.</p>
+                    <strong style="font-size: 13px;">Potential Monthly Savings: ₹1,000 | Annual: ₹12,000</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. BUDGET → GOAL → EXPENSE ACTIVITY RELATIONSHIP -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-link"></i> Budget → Goal → Expense Activity Context</h2>
+            </div>
+            {% for b_item in budget_analytics_list %}
+                {% if b_item.linked_goal %}
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 18px; border-radius: 12px; margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div>
+                            <strong style="font-size: 16px; color: #0F172A;">Budget: {{ b_item.budget.month }} {{ b_item.budget.year }}</strong>
+                            <span style="color: #64748B; font-size: 14px; margin-left: 10px;">Linked to Goal: <strong>🎯 {{ b_item.linked_goal.goal_name }}</strong></span>
+                        </div>
+                        <span class="badge-status {{ b_item.status_class }}">{{ b_item.status }}</span>
+                    </div>
+                    <div style="font-size: 13px; color: #475569; margin-bottom: 10px;">
+                        Budget Limit: <strong>₹{{ "{:,.0f}".format(b_item.budget.monthly_budget) }}</strong> | Spent: <strong>₹{{ "{:,.0f}".format(b_item.actual_spent) }}</strong> | Remaining: <strong>₹{{ "{:,.0f}".format(b_item.rem_amount) }}</strong> | Usage: <strong>{{ b_item.usage_pct }}%</strong>
+                    </div>
+                    <div style="font-size: 13px; color: #1E40AF; background: #EEF2FF; padding: 8px 12px; border-radius: 6px;">
+                        Goal Status: <strong>{{ b_item.linked_goal.goal_name }}</strong> target is ₹{{ "{:,.0f}".format(b_item.linked_goal.target_amount) }} (Saved: ₹{{ "{:,.0f}".format(b_item.linked_goal.current_amount) }} / {{ ((b_item.linked_goal.current_amount / b_item.linked_goal.target_amount)*100)|round(1) }}%).
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+         TAB 4: TRENDS & PREDICTIONS
+    ========================================================= -->
+    <div id="tab-trends" class="tab-content">
+
+        <!-- 1. GOAL ANALYTICS SUMMARY -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-bullseye"></i> Goal Analytics & Progress Breakdown</h2>
+            </div>
+            <div class="grid-4col" style="margin-bottom: 20px;">
+                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 13px; color: #64748B; display: block;">Total Goals</span>
+                    <strong style="font-size: 22px; color: #0F172A;">{{ goal_analytics_list|length }}</strong>
+                </div>
+                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 13px; color: #64748B; display: block;">Active Goals</span>
+                    <strong style="font-size: 22px; color: #2563EB;">{{ active_count }}</strong>
+                </div>
+                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 13px; color: #64748B; display: block;">Near Completion (≥75%)</span>
+                    <strong style="font-size: 22px; color: #D97706;">{{ near_completion_count }}</strong>
+                </div>
+                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 13px; color: #64748B; display: block;">Completed Goals</span>
+                    <strong style="font-size: 22px; color: #16A34A;">{{ completed_count }}</strong>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                {% for g_item in goal_analytics_list %}
+                <div style="background: #F8FAFC; border-radius: 12px; padding: 16px; border: 1px solid #E2E8F0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="font-size: 15px; color: #0F172A;">🎯 {{ g_item.goal.goal_name }}</strong>
+                        <span class="badge-status {% if g_item.goal.status == 'Completed' %}healthy{% else %}normal{% endif %}">{{ g_item.goal.status }}</span>
+                    </div>
+                    <div style="font-size: 13px; color: #64748B; margin-bottom: 8px;">
+                        Target: ₹{{ "{:,.0f}".format(g_item.goal.target_amount) }} | Saved: ₹{{ "{:,.0f}".format(g_item.goal.current_amount) }}
+                    </div>
+                    <div class="progress-bar-container" style="height: 8px; margin-bottom: 6px;">
+                        <div class="progress-bar-fill" style="width: {{ g_item.prog_pct }}%;"></div>
+                    </div>
+                    <div style="font-size: 12px; color: #64748B; display: flex; justify-content: space-between;">
+                        <span>Progress: <strong>{{ g_item.prog_pct }}%</strong></span>
+                        <span>Remaining: <strong>₹{{ "{:,.0f}".format(g_item.rem_amt) }}</strong></span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 2. GOAL-LINKED EXPENSE ANALYSIS -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-receipt"></i> Goal-Linked Expense Analysis</h2>
+                <span class="badge badge-info">Real DB Goal <----> Expense Relationship</span>
+            </div>
+            <table class="analytics-table" style="margin-bottom: 20px;">
+                <thead>
+                    <tr>
+                        <th>Goal Name</th>
+                        <th>Total Linked Expenses</th>
+                        <th>Expenses Count</th>
+                        <th>Average Expense Amount</th>
+                        <th>Latest Expense Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in goal_expense_analytics.goal_analysis_list %}
+                    <tr>
+                        <td><strong>🎯 {{ item.goal.goal_name }}</strong></td>
+                        <td><strong style="color: #2563EB;">₹{{ "{:,.0f}".format(item.total_expenses) }}</strong></td>
+                        <td>{{ item.count_expenses }}</td>
+                        <td>₹{{ "{:,.2f}".format(item.avg_expense) }}</td>
+                        <td>{{ item.latest_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="grid-2col">
+                <!-- Chart 1: Goal-Related Expenses by Goal -->
+                <div>
+                    <h3 style="font-size: 15px; color: #0F172A; margin: 0 0 10px 0;">Goal-Related Expenses by Goal</h3>
+                    <div style="height: 240px;">
+                        <canvas id="goalExpensesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Expense Distribution -->
+                <div>
+                    <h3 style="font-size: 15px; color: #0F172A; margin: 0 0 10px 0;">Expense Distribution (Goal-Linked vs Regular)</h3>
+                    <div style="height: 240px;">
+                        <canvas id="goalVsRegularChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. MONTHLY GOAL-LINKED EXPENSE TREND -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-arrow-trend-up"></i> Monthly Goal-Linked Expense Trend</h2>
+            </div>
+            <div style="height: 250px;">
+                <canvas id="monthlyGoalExpenseTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 4. TREND FORECAST & CASH FLOW CHART -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-chart-line"></i> 6-Month Cash Flow & Savings Forecast</h2>
+            </div>
+            <div style="height: 280px;">
+                <canvas id="trendsCashFlowChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+         TAB 5: FINANCIAL HEALTH SCORE DASHBOARD
+    ========================================================= -->
+    <div id="tab-health" class="tab-content">
+
+        <!-- 1. OVERALL SCORE HERO CARD -->
+        {% if health_score %}
+        <div class="section-card" style="border-left: 6px solid {% if health_score.score >= 80 %}#16A34A{% elif health_score.score >= 60 %}#2563EB{% elif health_score.score >= 40 %}#D97706{% else %}#DC2626{% endif %};">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-shield-halved" style="color: #2563EB;"></i> Overall Financial Health Score</h2>
+                <span class="badge-status {% if health_score.score >= 80 %}healthy{% elif health_score.score >= 60 %}normal{% elif health_score.score >= 40 %}warning{% else %}exceeded{% endif %}">
+                    Status: {{ health_score.status_label }}
+                </span>
+            </div>
+
+            <div class="grid-2col" style="align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="width: 90px; height: 90px; border-radius: 50%; background: {% if health_score.score >= 80 %}#DCFCE7{% elif health_score.score >= 60 %}#DBEAFE{% elif health_score.score >= 40 %}#FEF3C7{% else %}#FEE2E2{% endif %}; color: {% if health_score.score >= 80 %}#16A34A{% elif health_score.score >= 60 %}#2563EB{% elif health_score.score >= 40 %}#D97706{% else %}#DC2626{% endif %}; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 850; line-height: 1;">
+                        <span style="font-size: 30px;">{{ health_score.score }}</span>
+                        <span style="font-size: 11px; opacity: 0.85;">out of 100</span>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0 0 6px 0; font-size: 20px; color: #0F172A;">
+                            Health Rating: {{ health_score.status_label }}
+                        </h3>
+                        <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.5;">{{ health_score.summary_explanation }}</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748B; margin-bottom: 8px;">
+                        <span>Visual Score Index Gauge</span>
+                        <strong style="color: #0F172A; font-size: 15px;">{{ health_score.score }} / 100</strong>
+                    </div>
+                    <div style="width: 100%; height: 14px; background: #E2E8F0; border-radius: 12px; overflow: hidden; position: relative;">
+                        <div style="height: 100%; width: {{ health_score.score }}%; background: {% if health_score.score >= 80 %}#16A34A{% elif health_score.score >= 60 %}#2563EB{% elif health_score.score >= 40 %}#D97706{% else %}#DC2626{% endif %}; border-radius: 12px; transition: width 0.6s ease;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94A3B8; margin-top: 6px;">
+                        <span>0 (At Risk)</span>
+                        <span>40 (Needs Attention)</span>
+                        <span>60 (Stable)</span>
+                        <span>80+ (Excellent)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 5 COMPONENT SCORE CARDS -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-list-check"></i> Component Score Breakdown</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <!-- Savings Score -->
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-piggy-bank" style="color: #16A34A;"></i> Savings Health</strong>
+                        <span style="font-size: 15px; font-weight: 700; color: #16A34A;">{{ health_score.savings_score }}/25</span>
+                    </div>
+                    <p style="margin: 0; font-size: 12px; color: #64748B;">{{ health_score.breakdown[0].note }}</p>
+                </div>
+
+                <!-- Budget Score -->
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-bullseye" style="color: #2563EB;"></i> Budget Health</strong>
+                        <span style="font-size: 15px; font-weight: 700; color: #2563EB;">{{ health_score.budget_score }}/25</span>
+                    </div>
+                    <p style="margin: 0; font-size: 12px; color: #64748B;">{{ health_score.breakdown[1].note }}</p>
+                </div>
+
+                <!-- Goal Progress Score -->
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-trophy" style="color: #D97706;"></i> Goal Progress</strong>
+                        <span style="font-size: 15px; font-weight: 700; color: #D97706;">{{ health_score.goal_score }}/20</span>
+                    </div>
+                    <p style="margin: 0; font-size: 12px; color: #64748B;">{{ health_score.breakdown[2].note }}</p>
+                </div>
+
+                <!-- Spending Health Score -->
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-chart-pie" style="color: #8B5CF6;"></i> Spending Health</strong>
+                        <span style="font-size: 15px; font-weight: 700; color: #8B5CF6;">{{ health_score.spending_score }}/15</span>
+                    </div>
+                    <p style="margin: 0; font-size: 12px; color: #64748B;">{{ health_score.breakdown[3].note }}</p>
+                </div>
+
+                <!-- Risk / Alert Score -->
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-shield-cat" style="color: #EC4899;"></i> Risk & Alerts</strong>
+                        <span style="font-size: 15px; font-weight: 700; color: #EC4899;">{{ health_score.risk_score }}/15</span>
+                    </div>
+                    <p style="margin: 0; font-size: 12px; color: #64748B;">{{ health_score.breakdown[4].note }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. POSITIVE FACTORS & AREAS FOR IMPROVEMENT -->
+        <div class="grid-2col">
+            <!-- Positive Financial Factors -->
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h2><i class="fa-solid fa-circle-check" style="color: #16A34A;"></i> Positive Financial Factors</h2>
+                </div>
+                {% if health_score.positive_factors %}
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        {% for pos in health_score.positive_factors %}
+                        <div style="background: #F0FDF4; border-left: 4px solid #16A34A; padding: 12px 16px; border-radius: 8px; font-size: 13px; color: #15803D;">
+                            <i class="fa-solid fa-check-double" style="margin-right: 6px;"></i> {{ pos }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="font-size: 13px; color: #64748B;">No major positive factors recorded yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Areas Needing Improvement -->
+            <div class="section-card">
+                <div class="section-card-header">
+                    <h2><i class="fa-solid fa-circle-exclamation" style="color: #D97706;"></i> Areas Needing Improvement</h2>
+                </div>
+                {% if health_score.areas_for_improvement %}
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        {% for area in health_score.areas_for_improvement %}
+                        <div style="background: #FFFBEB; border-left: 4px solid #D97706; padding: 12px 16px; border-radius: 8px; font-size: 13px; color: #B45309;">
+                            <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> {{ area }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="background: #F0FDF4; border-left: 4px solid #16A34A; padding: 14px 16px; border-radius: 8px; font-size: 13px; color: #15803D;">
+                        🎉 Outstanding! No critical areas requiring immediate improvement.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 4. DYNAMIC RECOMMENDATIONS TO IMPROVE SCORE -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-lightbulb" style="color: #2563EB;"></i> Dynamic Recommendations to Improve Score</h2>
+                <span class="badge badge-info">Actionable Score Optimizer</span>
+            </div>
+            {% if health_score.recommendations %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+                    {% for rec in health_score.recommendations %}
+                    <div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 16px; border-radius: 10px; color: #1E40AF;">
+                        <h4 style="margin: 0 0 6px 0; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-arrow-up-right-dots"></i> Score Booster Action
+                        </h4>
+                        <p style="margin: 0; font-size: 13px; color: #1E3A8A; line-height: 1.5;">{{ rec }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="background: #F0FDF4; border: 1px solid #BBF7D0; padding: 16px; border-radius: 10px; color: #15803D;">
+                    <h4 style="margin: 0 0 4px 0; font-size: 14px;">🌟 Peak Financial Performance</h4>
+                    <p style="margin: 0; font-size: 13px;">Your financial health score is already at maximum potential. Continue maintaining current savings and budget discipline!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<!-- Pass Window Analytics Data to JavaScript -->
+<script>
+    window.analyticsData = {
+        categories: {{ spending_analysis.categories|tojson }},
+        categoryAmounts: {{ spending_analysis.amounts|tojson }},
+        trendLabels: {{ cash_flow_trend.labels|tojson }},
+        trendIncome: {{ cash_flow_trend.income|tojson }},
+        trendExpenses: {{ cash_flow_trend.expenses|tojson }},
+        trendSavings: {{ cash_flow_trend.savings|tojson }},
+        monthlyTrend6mLabels: {{ advanced_patterns.monthly_trend_6m.labels|tojson }},
+        monthlyTrend6mAmounts: {{ advanced_patterns.monthly_trend_6m.amounts|tojson }},
+        weeklyLabels: {{ advanced_patterns.weekly_pattern.labels|tojson }},
+        weeklyAmounts: {{ advanced_patterns.weekly_pattern.amounts|tojson }},
+        goalNames: {{ goal_expense_analytics.goal_names|tojson }},
+        goalLinkedTotals: {{ goal_expense_analytics.goal_linked_totals|tojson }},
+        totalGoalLinked: {{ goal_expense_analytics.total_all_goal_linked|tojson }},
+        totalRegularExpenses: {{ goal_expense_analytics.total_regular_expenses|tojson }},
+        monthlyGoalTrendLabels: {{ goal_expense_analytics.monthly_trend_labels|tojson }},
+        monthlyGoalTrendAmounts: {{ goal_expense_analytics.monthly_trend_amounts|tojson }}
+    };
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        const targetBtn = event.currentTarget;
+        const targetContent = document.getElementById('tab-' + tabName);
+
+        if (targetBtn && targetContent) {
+            targetBtn.classList.add('active');
+            targetContent.classList.add('active');
+        }
+    }
+</script>
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}
