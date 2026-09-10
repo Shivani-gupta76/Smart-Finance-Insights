@@ -399,11 +399,6 @@ DATABASE_URL=sqlite:///database/finance.db
 SESSION_COOKIE_SECURE=False
 ```
 
-> [!CAUTION]
-> Never commit the `.env` file or expose secret keys in public version control repositories.
-
----
-
 ## 13. Running the Application
 
 To start the Flask development server:
