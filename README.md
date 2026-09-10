@@ -419,6 +419,26 @@ Upon execution, database tables and default indexes will automatically initializ
 
 ---
 
+## 🚀 Deployment
+
+FinSight is deployed as a production Flask application using **Render** and **Gunicorn**.
+
+### 🌐 Live Application
+
+**Live URL:**  
+https://smart-finance-insights-rbd6.onrender.com
+
+### ⚙️ Deployment Configuration
+
+- **Hosting Platform:** Render
+- **Source Repository:** GitHub
+- **Deployment Branch:** `main`
+- **Web Framework:** Flask
+- **Production Server:** Gunicorn
+- **Build Command:**
+  ```bash
+  pip install -r requirements.txt
+
 ## 14. Testing
 
 FinSight includes an automated integration and security test suite built with `pytest`.
