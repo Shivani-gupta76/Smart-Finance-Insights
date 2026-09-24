@@ -1,12 +1,12 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
-Edit Investment
+Edit Investment | FinSight — Financial Intelligence
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/investment.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/investment.css') }}">
 {% endblock %}
 
 {% block page_title %}
@@ -16,115 +16,46 @@ Edit Investment
 {% block content %}
 
 <div class="investment-page">
-
-    <div class="investment-box add-investment-box">
-
+    <div class="investment-box add-investment-box" style="max-width: 800px; margin: 0 auto;">
         <div class="box-header">
-
             <div>
-                <h3>✏️ Edit Investment</h3>
-
-                <p>
-                    Update your investment details and portfolio value.
-                </p>
+                <h3><span style="display:inline-flex; align-items:center; color: #8b5cf6;">{{ icons.icon("edit", size=22) }}</span> Edit Investment</h3>
+                <p>Update your investment details and portfolio value.</p>
             </div>
-
         </div>
-
 
         <form method="POST" class="investment-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <!-- Instrument + Asset Type -->
-
             <div class="form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Instrument Name
-                    </label>
-
+                    <label>Instrument Name</label>
                     <input
                         type="text"
                         name="instrument_name"
                         value="{{ investment.instrument_name }}"
                         required
                     >
-
                 </div>
-
 
                 <div class="form-group">
-
-                    <label>
-                        Asset Type
-                    </label>
-
-                    <select
-                        name="asset_type"
-                        required
-                    >
-
-                        <option value="Equity"
-                            {% if investment.asset_type == "Equity" %}
-                                selected
-                            {% endif %}>
-                            Equity
-                        </option>
-
-                        <option value="Mutual Fund"
-                            {% if investment.asset_type == "Mutual Fund" %}
-                                selected
-                            {% endif %}>
-                            Mutual Fund
-                        </option>
-
-                        <option value="Debt"
-                            {% if investment.asset_type == "Debt" %}
-                                selected
-                            {% endif %}>
-                            Debt
-                        </option>
-
-                        <option value="Gold"
-                            {% if investment.asset_type == "Gold" %}
-                                selected
-                            {% endif %}>
-                            Gold
-                        </option>
-
-                        <option value="Cash"
-                            {% if investment.asset_type == "Cash" %}
-                                selected
-                            {% endif %}>
-                            Cash
-                        </option>
-
-                        <option value="Other"
-                            {% if investment.asset_type == "Other" %}
-                                selected
-                            {% endif %}>
-                            Other
-                        </option>
-
+                    <label>Asset Type</label>
+                    <select name="asset_type" required>
+                        <option value="Equity" {% if investment.asset_type == "Equity" %}selected{% endif %}>Equity</option>
+                        <option value="Mutual Fund" {% if investment.asset_type == "Mutual Fund" %}selected{% endif %}>Mutual Fund</option>
+                        <option value="Debt" {% if investment.asset_type == "Debt" %}selected{% endif %}>Debt</option>
+                        <option value="Gold" {% if investment.asset_type == "Gold" %}selected{% endif %}>Gold</option>
+                        <option value="Cash" {% if investment.asset_type == "Cash" %}selected{% endif %}>Cash</option>
+                        <option value="Other" {% if investment.asset_type == "Other" %}selected{% endif %}>Other</option>
                     </select>
-
                 </div>
-
             </div>
 
-
             <!-- Quantity + Amounts -->
-
             <div class="form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Quantity
-                    </label>
-
+                    <label>Quantity</label>
                     <input
                         type="number"
                         name="quantity"
@@ -133,16 +64,10 @@ Edit Investment
                         value="{{ investment.quantity }}"
                         required
                     >
-
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Invested Amount
-                    </label>
-
+                    <label>Invested Amount (₹)</label>
                     <input
                         type="number"
                         name="invested_amount"
@@ -151,16 +76,10 @@ Edit Investment
                         value="{{ investment.invested_amount }}"
                         required
                     >
-
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Current Value
-                    </label>
-
+                    <label>Current Value (₹)</label>
                     <input
                         type="number"
                         name="current_value"
@@ -169,76 +88,43 @@ Edit Investment
                         value="{{ investment.current_value }}"
                         required
                     >
-
                 </div>
-
             </div>
 
-
             <!-- Date + Description -->
-
             <div class="form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Purchase Date
-                    </label>
-
+                    <label>Purchase Date</label>
                     <input
                         type="date"
                         name="purchase_date"
                         value="{{ investment.purchase_date.strftime('%Y-%m-%d') }}"
                         required
                     >
-
                 </div>
 
-
                 <div class="form-group form-group-wide">
-
-                    <label>
-                        Description
-                    </label>
-
+                    <label>Description</label>
                     <input
                         type="text"
                         name="description"
                         value="{{ investment.description or '' }}"
                         placeholder="Optional notes"
                     >
-
                 </div>
-
             </div>
-
 
             <!-- Buttons -->
-
-            <div style="display:flex; gap:10px;">
-
-                <button
-                    type="submit"
-                    class="btn-primary"
-                >
-                    Update Investment
+            <div style="display: flex; gap: 12px; margin-top: 10px;">
+                <button type="submit" class="btn-primary" style="background: #8b5cf6; border-color: #8b5cf6;">
+                    {{ icons.icon("check", size=16) }} Update Investment
                 </button>
-
-
-                <a
-                    href="{{ url_for('investment.investments') }}"
-                    class="btn-edit"
-                    style="padding:11px 18px;"
-                >
+                <a href="{{ url_for('investment.investments') }}" class="btn btn-secondary" style="text-decoration: none;">
                     Cancel
                 </a>
-
             </div>
-
         </form>
-
     </div>
-
 </div>
 
 {% endblock %}

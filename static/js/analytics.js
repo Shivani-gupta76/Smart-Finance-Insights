@@ -2,8 +2,10 @@
    Analytics Dashboard — Chart.js Visualizations (Multi-Tab & Goal-Expense)
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (!window.analyticsData) return;
+window.chartInstances = {};
+
+function initOrUpdateAnalyticsCharts() {
+    if (!window.analyticsData || !window.Chart) return;
 
     const data = window.analyticsData;
 
@@ -16,18 +18,15 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 
-    if (window.Chart) {
-        const tc = getChartThemeColors();
-        Chart.defaults.color = tc.textColor;
-        Chart.defaults.borderColor = tc.gridColor;
-    }
+    const tc = getChartThemeColors();
+    Chart.defaults.color = tc.textColor;
+    Chart.defaults.borderColor = tc.gridColor;
 
     const palette = [
         "#2563EB", "#16A34A", "#D97706", "#9333EA", "#06B6D4",
         "#EC4899", "#8B5CF6", "#F59E0B", "#10B981", "#6366F1"
     ];
 
-    // Helper function for line chart config
     function getLineChartConfig(labels, income, expenses, savings) {
         return {
             type: "line",
@@ -88,20 +87,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 1. Overview Tab Cash Flow Line Chart
     const overviewCashCtx = document.getElementById("overviewCashFlowChart");
-    if (overviewCashCtx && data.trendLabels) {
-        new Chart(overviewCashCtx, getLineChartConfig(data.trendLabels, data.trendIncome, data.trendExpenses, data.trendSavings));
+    if (overviewCashCtx && data.trendLabels && !window.chartInstances.overviewCash) {
+        window.chartInstances.overviewCash = new Chart(overviewCashCtx, getLineChartConfig(data.trendLabels, data.trendIncome, data.trendExpenses, data.trendSavings));
     }
 
     // 2. Spending Analysis Tab Doughnut Chart
     const doughnutCtx = document.getElementById("categoryDoughnutChart");
-    if (doughnutCtx && data.categories && data.categories.length > 0) {
-        new Chart(doughnutCtx, {
+    if (doughnutCtx && !window.chartInstances.categoryDoughnut) {
+        const initCategories = (data.spendingPeriods && data.spendingPeriods.this_month && data.spendingPeriods.this_month.categories) ? data.spendingPeriods.this_month.categories : (data.categories || []);
+        const initAmounts = (data.spendingPeriods && data.spendingPeriods.this_month && data.spendingPeriods.this_month.amounts) ? data.spendingPeriods.this_month.amounts : (data.categoryAmounts || []);
+
+        window.chartInstances.categoryDoughnut = new Chart(doughnutCtx, {
             type: "doughnut",
             data: {
-                labels: data.categories,
+                labels: initCategories,
                 datasets: [{
-                    data: data.categoryAmounts,
-                    backgroundColor: palette.slice(0, data.categories.length),
+                    data: initAmounts,
+                    backgroundColor: palette.slice(0, initCategories.length),
                     borderWidth: 2,
                     borderColor: "#ffffff"
                 }]
@@ -123,84 +125,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 3. Monthly Spending Trend (Last 6 Months) Bar Chart
-    const monthlyTrendCtx = document.getElementById("monthlyTrendChart");
-    if (monthlyTrendCtx && data.monthlyTrend6mLabels) {
-        new Chart(monthlyTrendCtx, {
-            type: "bar",
-            data: {
-                labels: data.monthlyTrend6mLabels,
-                datasets: [{
-                    label: "Monthly Expenses (₹)",
-                    data: data.monthlyTrend6mAmounts,
-                    backgroundColor: "#2563EB",
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                return ` Expenses: ₹${ctx.raw.toLocaleString()}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { callback: function (val) { return "₹" + val.toLocaleString(); } }
-                    }
-                }
-            }
-        });
-    }
-
-    // 4. Weekly Spending Pattern (Current Month) Bar Chart
-    const weeklyPatternCtx = document.getElementById("weeklyPatternChart");
-    if (weeklyPatternCtx && data.weeklyLabels) {
-        new Chart(weeklyPatternCtx, {
-            type: "bar",
-            data: {
-                labels: data.weeklyLabels,
-                datasets: [{
-                    label: "Weekly Expenses (₹)",
-                    data: data.weeklyAmounts,
-                    backgroundColor: "#8B5CF6",
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                return ` Expenses: ₹${ctx.raw.toLocaleString()}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { callback: function (val) { return "₹" + val.toLocaleString(); } }
-                    }
-                }
-            }
-        });
-    }
-
-    // 5. Goal-Related Expenses by Goal (Bar Chart)
+    // 3. Goal-Related Expenses by Goal (Bar Chart)
     const goalExpCtx = document.getElementById("goalExpensesChart");
-    if (goalExpCtx && data.goalNames && data.goalNames.length > 0) {
-        new Chart(goalExpCtx, {
+    if (goalExpCtx && data.goalNames && data.goalNames.length > 0 && !window.chartInstances.goalExpenses) {
+        window.chartInstances.goalExpenses = new Chart(goalExpCtx, {
             type: "bar",
             data: {
                 labels: data.goalNames,
@@ -234,10 +162,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 6. Expense Distribution (Goal-Linked vs Regular Non-Goal Expenses Doughnut Chart)
+    // 4. Expense Distribution (Goal-Linked vs Regular Doughnut Chart)
     const goalVsRegCtx = document.getElementById("goalVsRegularChart");
-    if (goalVsRegCtx) {
-        new Chart(goalVsRegCtx, {
+    if (goalVsRegCtx && !window.chartInstances.goalVsRegular) {
+        window.chartInstances.goalVsRegular = new Chart(goalVsRegCtx, {
             type: "doughnut",
             data: {
                 labels: ["Goal-Linked Expenses", "Regular Expenses"],
@@ -265,10 +193,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 7. Monthly Goal-Linked Expense Trend (Line/Bar Chart)
+    // 5. Monthly Goal-Linked Expense Trend Line Chart
     const monthlyGoalTrendCtx = document.getElementById("monthlyGoalExpenseTrendChart");
-    if (monthlyGoalTrendCtx && data.monthlyGoalTrendLabels) {
-        new Chart(monthlyGoalTrendCtx, {
+    if (monthlyGoalTrendCtx && data.monthlyGoalTrendLabels && !window.chartInstances.monthlyGoalTrend) {
+        window.chartInstances.monthlyGoalTrend = new Chart(monthlyGoalTrendCtx, {
             type: "line",
             data: {
                 labels: data.monthlyGoalTrendLabels,
@@ -304,10 +232,67 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+}
 
-    // 8. Trends & Predictions Tab Line Chart
-    const trendsCashCtx = document.getElementById("trendsCashFlowChart");
-    if (trendsCashCtx && data.trendLabels) {
-        new Chart(trendsCashCtx, getLineChartConfig(data.trendLabels, data.trendIncome, data.trendExpenses, data.trendSavings));
+window.selectSpendingPeriod = function(periodKey) {
+    if (!window.analyticsData) return;
+    const data = window.analyticsData;
+    if (!data.spendingPeriods || !data.spendingPeriods[periodKey]) return;
+
+    document.querySelectorAll("#tab-spending .filter-btn").forEach(btn => {
+        btn.classList.remove("active");
+        if (btn.getAttribute("onclick") && btn.getAttribute("onclick").includes(periodKey)) {
+            btn.classList.add("active");
+        }
+    });
+
+    const periodData = data.spendingPeriods[periodKey];
+    const categories = periodData.categories || [];
+    const amounts = periodData.amounts || [];
+    const totalExp = periodData.total_expenses || 0;
+    const palette = [
+        "#2563EB", "#16A34A", "#D97706", "#9333EA", "#06B6D4",
+        "#EC4899", "#8B5CF6", "#F59E0B", "#10B981", "#6366F1"
+    ];
+
+    if (window.chartInstances && window.chartInstances.categoryDoughnut) {
+        window.chartInstances.categoryDoughnut.data.labels = categories;
+        window.chartInstances.categoryDoughnut.data.datasets[0].data = amounts;
+        window.chartInstances.categoryDoughnut.data.datasets[0].backgroundColor = palette.slice(0, categories.length);
+        window.chartInstances.categoryDoughnut.update();
     }
+
+    const tbody = document.getElementById("spendingCategoryTableBody");
+    if (tbody) {
+        if (categories.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94A3B8; padding:20px;">No expense records found for this period.</td></tr>';
+        } else {
+            let html = '';
+            categories.forEach((cat, idx) => {
+                const amt = amounts[idx] || 0;
+                const pct = totalExp > 0 ? ((amt / totalExp) * 100).toFixed(1) : 0;
+                html += `<tr>
+                    <td><strong>${cat}</strong></td>
+                    <td>₹${amt.toLocaleString()}</td>
+                    <td>${pct}%</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+    }
+};
+
+window.renderOrResizeCharts = function(tabName) {
+    initOrUpdateAnalyticsCharts();
+    setTimeout(function() {
+        Object.values(window.chartInstances || {}).forEach(chart => {
+            if (chart && typeof chart.resize === 'function') {
+                chart.resize();
+            }
+        });
+    }, 50);
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+    initOrUpdateAnalyticsCharts();
 });

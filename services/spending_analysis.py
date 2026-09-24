@@ -31,13 +31,48 @@ def get_last_day_of_month(dt_start):
     return next_month - timedelta(days=1)
 
 
-def get_spending_analysis(user_id):
+MONTH_NAME_MAP = {
+    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
+    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12
+}
+
+
+def resolve_month_year(sel_month=None, sel_year=None):
+    """
+    Resolves month name, month number, year, start date, and bounded end date
+    for a given month and year input. Defaults to current date if missing/invalid.
+    """
+    today = date.today()
+    if not sel_month or not isinstance(sel_month, str):
+        sel_month_name = today.strftime("%B")
+        sel_month_num = today.month
+    else:
+        sel_month_name = sel_month.strip().capitalize()
+        sel_month_num = MONTH_NAME_MAP.get(sel_month.strip().lower(), today.month)
+    
+    try:
+        sel_year_num = int(sel_year) if sel_year else today.year
+    except (ValueError, TypeError):
+        sel_year_num = today.year
+
+    start_date = date(sel_year_num, sel_month_num, 1)
+    last_day = get_last_day_of_month(start_date)
+    if sel_year_num == today.year and sel_month_num == today.month:
+        end_date = min(today, last_day)
+    else:
+        end_date = last_day
+
+    return sel_month_name, sel_month_num, sel_year_num, start_date, end_date
+
+
+def get_spending_analysis(user_id, sel_month=None, sel_year=None):
     """
     Analyzes spending patterns for the given user using actual DB records.
     Returns structured data for financial metrics, category breakdown,
     month-over-month comparison, budget status, and rule-based insights.
     """
     today = date.today()
+    sel_month_name, sel_month_num, sel_year_num, start_date_sel, end_date_sel = resolve_month_year(sel_month, sel_year)
 
     # 1. Total Income & Total Expenses
     incomes = Income.query.filter_by(user_id=user_id).all()
@@ -67,13 +102,13 @@ def get_spending_analysis(user_id):
         highest_spending_percentage = round((highest_spending_amount / total_expenses) * 100, 1)
 
     # 3. Current Month vs Previous Month Spending
-    first_day_current_month = get_first_day_of_month(today, 0)
-    first_day_prev_month = get_first_day_of_month(today, 1)
+    first_day_current_month = start_date_sel
+    first_day_prev_month = get_first_day_of_month(start_date_sel, 1)
     last_day_prev_month = get_last_day_of_month(first_day_prev_month)
 
     current_month_expenses = sum(
         exp.amount for exp in expenses
-        if exp.expense_date and exp.expense_date >= first_day_current_month
+        if exp.expense_date and first_day_current_month <= exp.expense_date <= end_date_sel
     )
 
     prev_month_expenses = sum(
@@ -95,7 +130,7 @@ def get_spending_analysis(user_id):
         if exp.expense_date:
             if first_day_prev_month <= exp.expense_date <= last_day_prev_month:
                 category_prev_month[exp.category] = category_prev_month.get(exp.category, 0.0) + exp.amount
-            elif exp.expense_date >= first_day_current_month:
+            elif first_day_current_month <= exp.expense_date <= end_date_sel:
                 category_curr_month[exp.category] = category_curr_month.get(exp.category, 0.0) + exp.amount
 
     increased_categories = []
@@ -110,17 +145,22 @@ def get_spending_analysis(user_id):
                 "diff": diff
             })
 
-    # 4. Budget Status
-    active_budget = Budget.query.filter_by(user_id=user_id).order_by(Budget.created_at.desc()).first()
+    # 4. Budget Status (Current Month)
+    active_budget = Budget.query.filter(
+        Budget.user_id == user_id,
+        func.lower(Budget.month) == sel_month_name.lower(),
+        Budget.year == sel_year_num
+    ).first()
+
     monthly_budget_amount = active_budget.monthly_budget if active_budget else 0.0
-    remaining_budget = monthly_budget_amount - total_expenses if monthly_budget_amount > 0 else 0.0
+    remaining_budget = monthly_budget_amount - current_month_expenses if monthly_budget_amount > 0 else 0.0
 
     budget_used_pct = 0.0
     if monthly_budget_amount > 0:
-        budget_used_pct = round((total_expenses / monthly_budget_amount) * 100, 1)
+        budget_used_pct = round((current_month_expenses / monthly_budget_amount) * 100, 1)
 
-    is_over_budget = (monthly_budget_amount > 0 and total_expenses > monthly_budget_amount)
-    over_budget_amount = max(0.0, total_expenses - monthly_budget_amount)
+    is_over_budget = (monthly_budget_amount > 0 and current_month_expenses > monthly_budget_amount)
+    over_budget_amount = max(0.0, current_month_expenses - monthly_budget_amount)
 
     # 5. Rule-Based Insights Generation (Explainable AI Engine)
     insights = []
@@ -475,7 +515,7 @@ def get_advanced_spending_patterns(user_id):
     }
 
 
-def get_rebuilt_analytics_data(user_id):
+def get_rebuilt_analytics_data(user_id, sel_month=None, sel_year=None):
     """
     Calculates data for the rebuilt Analytics Dashboard:
     1. Top 4 KPI Cards:
@@ -489,20 +529,27 @@ def get_rebuilt_analytics_data(user_id):
     5. AI Insights (Rule-based explainable insights)
     """
     today = date.today()
+    sel_month_name, sel_month_num, sel_year_num, start_date_sel, end_date_sel = resolve_month_year(sel_month, sel_year)
+
     incomes = Income.query.filter_by(user_id=user_id).all()
     expenses = Expense.query.filter_by(user_id=user_id).all()
     accounts = Account.query.filter_by(user_id=user_id).all()
     goals = Goal.query.filter_by(user_id=user_id).all()
-    budget = Budget.query.filter_by(user_id=user_id).order_by(Budget.created_at.desc()).first()
+
+    budget = Budget.query.filter(
+        Budget.user_id == user_id,
+        func.lower(Budget.month) == sel_month_name.lower(),
+        Budget.year == sel_year_num
+    ).first()
 
     # 1. Current & Previous Month Dates
-    first_day_curr = get_first_day_of_month(today, 0)
-    first_day_prev = get_first_day_of_month(today, 1)
+    first_day_curr = start_date_sel
+    first_day_prev = get_first_day_of_month(start_date_sel, 1)
     last_day_prev = get_last_day_of_month(first_day_prev)
 
     # Current Month Income & Expenses
-    curr_m_income = sum(i.amount for i in incomes if i.income_date and i.income_date >= first_day_curr)
-    curr_m_expense = sum(e.amount for e in expenses if e.expense_date and e.expense_date >= first_day_curr)
+    curr_m_income = sum(i.amount for i in incomes if i.income_date and start_date_sel <= i.income_date <= end_date_sel)
+    curr_m_expense = sum(e.amount for e in expenses if e.expense_date and start_date_sel <= e.expense_date <= end_date_sel)
     curr_m_savings = curr_m_income - curr_m_expense
     savings_pct = round((curr_m_savings / curr_m_income) * 100, 1) if curr_m_income > 0 else 0.0
 
@@ -821,15 +868,15 @@ def get_goal_expense_analytics(user_id):
     }
 
 
-def get_goal_expense_analytics(user_id):
+def get_goal_expense_analytics(user_id, sel_month=None, sel_year=None):
     """
     Computes real Expense-to-Goal Analytics:
     1. Per Goal Expense Metrics (Total linked expenses, Count, Avg amount, Latest date)
     2. Goal vs Expense Visualizations (Goal-Linked Expenses by Goal, Goal-linked vs Regular Non-goal expenses)
-    3. Monthly Goal-Linked Expense Trend (Last 6 Months)
+    3. Monthly Goal-Linked Expense Trend (Last 6 Months ending at selected month)
     4. Smart Dashboard Goal-Expense metrics
     """
-    today = date.today()
+    sel_month_name, sel_month_num, sel_year_num, start_date_sel, end_date_sel = resolve_month_year(sel_month, sel_year)
     goals = Goal.query.filter_by(user_id=user_id).all()
     all_expenses = Expense.query.filter_by(user_id=user_id).all()
 
@@ -878,11 +925,11 @@ def get_goal_expense_analytics(user_id):
 
     goals_with_expenses_count = sum(1 for item in goal_analysis_list if item["count_expenses"] > 0)
 
-    # Monthly Goal-Linked Expense Trend (Last 6 Months)
+    # Monthly Goal-Linked Expense Trend (Last 6 Months ending at selected month)
     month_labels = []
     monthly_goal_expenses = []
     for i in range(5, -1, -1):
-        m_start = get_first_day_of_month(today, i)
+        m_start = get_first_day_of_month(start_date_sel, i)
         m_end = get_last_day_of_month(m_start)
         m_label = m_start.strftime("%b %Y")
         
@@ -909,7 +956,7 @@ def get_goal_expense_analytics(user_id):
     }
 
 
-def calculate_financial_health_score(user_id):
+def calculate_financial_health_score(user_id, sel_month=None, sel_year=None):
     """
     Dynamically calculates the Financial Health Score (0-100) based on 5 financial pillars:
     1. Net Savings Rate (25 pts)
@@ -920,15 +967,25 @@ def calculate_financial_health_score(user_id):
     """
     from models.alert import FinancialAlert
 
+    sel_month_name, sel_month_num, sel_year_num, start_date_sel, end_date_sel = resolve_month_year(sel_month, sel_year)
+
     incomes = Income.query.filter_by(user_id=user_id).all()
     expenses = Expense.query.filter_by(user_id=user_id).all()
     goals = Goal.query.filter_by(user_id=user_id).all()
-    active_budget = Budget.query.filter_by(user_id=user_id).order_by(Budget.created_at.desc()).first()
+
+    active_budget = Budget.query.filter(
+        Budget.user_id == user_id,
+        func.lower(Budget.month) == sel_month_name.lower(),
+        Budget.year == sel_year_num
+    ).first()
+
     unread_alerts = FinancialAlert.query.filter_by(user_id=user_id, is_read=False).all()
 
     total_income = sum(inc.amount for inc in incomes)
     total_expenses = sum(exp.amount for exp in expenses)
     total_savings = total_income - total_expenses
+
+    curr_m_expense = sum(e.amount for e in expenses if e.expense_date and start_date_sel <= e.expense_date <= end_date_sel)
 
     breakdown = []
 
@@ -965,10 +1022,10 @@ def calculate_financial_health_score(user_id):
         "note": savings_note
     })
 
-    # 2. Budget Health (Max 25 Pts)
+    # 2. Budget Health (Max 25 Pts - Current Month)
     if active_budget and active_budget.monthly_budget > 0:
         budget_limit = active_budget.monthly_budget
-        budget_used_pct = round((total_expenses / budget_limit) * 100, 1)
+        budget_used_pct = round((curr_m_expense / budget_limit) * 100, 1)
         if budget_used_pct <= 70.0:
             budget_score = 25
             budget_note = f"Excellent budget utilization ({budget_used_pct}% used)."
@@ -986,7 +1043,7 @@ def calculate_financial_health_score(user_id):
             budget_note = f"Severe budget overrun ({budget_used_pct}% used)."
     else:
         budget_score = 15
-        budget_note = "No active monthly budget set."
+        budget_note = f"No active monthly budget set for {sel_month_name} {sel_year_num}."
 
     breakdown.append({
         "pillar": "Budget Health",
@@ -1157,3 +1214,47 @@ def calculate_financial_health_score(user_id):
         "areas_for_improvement": areas_for_improvement,
         "recommendations": recommendations
     }
+
+
+def get_spending_analysis_periods(user_id, sel_month=None, sel_year=None):
+    """
+    Computes category breakdowns and totals for 4 distinct periods based on selected month/year:
+    1. This Month: start_date_sel <= expense_date <= end_date_sel
+    2. Last Month: first_day_prev <= expense_date <= last_day_prev
+    3. Last 3 Months: first_day_3m <= expense_date <= end_date_sel
+    4. All Time: all logged-in user expenses
+    """
+    sel_month_name, sel_month_num, sel_year_num, start_date_sel, end_date_sel = resolve_month_year(sel_month, sel_year)
+    expenses = Expense.query.filter_by(user_id=user_id).all()
+
+    first_day_prev = get_first_day_of_month(start_date_sel, 1)
+    last_day_prev = get_last_day_of_month(first_day_prev)
+    first_day_3m = get_first_day_of_month(start_date_sel, 2)
+
+    periods = {
+        "this_month": [e for e in expenses if e.expense_date and start_date_sel <= e.expense_date <= end_date_sel],
+        "last_month": [e for e in expenses if e.expense_date and first_day_prev <= e.expense_date <= last_day_prev],
+        "last_3_months": [e for e in expenses if e.expense_date and first_day_3m <= e.expense_date <= end_date_sel],
+        "all_time": expenses
+    }
+
+    result = {}
+    for period_key, exp_list in periods.items():
+        cat_totals = {}
+        total_exp = 0.0
+        for exp in exp_list:
+            cat_totals[exp.category] = cat_totals.get(exp.category, 0.0) + exp.amount
+            total_exp += exp.amount
+
+        sorted_cats = sorted(cat_totals.items(), key=lambda x: x[1], reverse=True)
+        categories = [item[0] for item in sorted_cats]
+        amounts = [float(item[1]) for item in sorted_cats]
+
+        result[period_key] = {
+            "categories": categories,
+            "amounts": amounts,
+            "category_totals": cat_totals,
+            "total_expenses": total_exp
+        }
+
+    return result

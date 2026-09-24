@@ -1,464 +1,200 @@
-<!DOCTYPE html>
-<html lang="en">
+{% import "partials/svg_icons.html" as icons %}
+{% extends "layout.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile | Smart Finance Insights</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+{% block title %}
+Profile | FinSight — Smart Finance Insights
+{% endblock %}
 
-    <script>
-        (function() {
-            var savedTheme = "{{ user.theme_preference if user and user.theme_preference else 'system' }}";
-            var localTheme = localStorage.getItem('finsight_theme');
-            var theme = (savedTheme && savedTheme !== 'system') ? savedTheme : (localTheme || 'system');
-            
-            document.documentElement.setAttribute('data-theme', theme);
-            if (theme === 'system') {
-                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                document.documentElement.setAttribute('data-rendered-theme', prefersDark ? 'dark' : 'light');
-            } else {
-                document.documentElement.setAttribute('data-rendered-theme', theme);
-            }
-        })();
-    </script>
+{% block page_title %}
+User Profile
+{% endblock %}
 
-    <style>
-        body{
-            margin:0;
-            font-family:'Poppins', Arial, sans-serif;
-            background: var(--bg-primary, #f4f6f9);
-            color: var(--text-primary, #0f172a);
-        }
+{% block content %}
 
-        .navbar{
-            background:#2563eb;
-            color:white;
-            padding:18px 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+<div class="profile-container" style="max-width: 800px; margin: 0 auto;">
 
-        .container{
-            width:750px;
-            max-width: 92%;
-            min-height:720px;
-            margin:40px auto;
-            background: var(--card-bg, white);
-            padding:35px;
-            border-radius:12px;
-            border: 1px solid var(--card-border, #e2e8f0);
-            box-shadow:0 5px 15px rgba(0,0,0,.1);
-            box-sizing:border-box;
-        }
-        .profile-header{
-
-    text-align:center;
-    margin-bottom:35px;
-
-}
-
-.profile-avatar{
-
-    margin-bottom:15px;
-
-}
-
-.profile-avatar img{
-
-    width:120px;
-    height:120px;
-
-    border-radius:50%;
-
-    object-fit:cover;
-
-    border:5px solid #2563eb;
-
-}
-
-.default-avatar{
-
-    width:120px;
-    height:120px;
-
-    margin:auto;
-
-    border-radius:50%;
-
-    background:#2563eb;
-
-    color:white;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    font-size:48px;
-
-    font-weight:bold;
-
-}
-
-.profile-header h2{
-
-    margin:8px 0;
-
-    color:#111827;
-
-    font-size:30px;
-
-}
-
-.profile-header p{
-
-    color:#64748B;
-
-    margin-bottom:25px;
-
-}
-
-        .tabs{
-            display:flex;
-            gap:15px;
-            margin-bottom:25px;
-        }
-
-        .tab-btn{
-            text-decoration:none;
-            padding:10px 18px;
-            background:#e5e7eb;
-            color:#333;
-            border-radius:6px;
-            font-weight:bold;
-            transition:.3s;
-        }
-
-        .tab-btn:hover{
-            background:#2563eb;
-            color:white;
-        }
-
-        .tab-btn.active{
-            background:#2563eb;
-            color:white;
-        }
-
-        h2{
-            margin-top:0;
-        }
-
-        table{
-            width:100%;
-            border-collapse:collapse;
-            margin-top:20px;
-        }
-
-        table td{
-            padding:14px 10px;
-            border-bottom:1px solid #ddd;
-        }
-
-        table td:first-child{
-            width:220px;
-            font-weight:bold;
-        }
-
-        input,
-        select{
-            width:100%;
-            padding:10px;
-            margin:8px 0 18px;
-            border:1px solid #ccc;
-            border-radius:5px;
-            box-sizing:border-box;
-        }
-
-        button{
-            width:100%;
-            padding:12px;
-            background:#2563eb;
-            color:white;
-            border:none;
-            border-radius:5px;
-            cursor:pointer;
-            font-size:15px;
-        }
-
-        button:hover{
-            background:#1d4ed8;
-        }
-
-        .action-buttons{
-            display:flex;
-            gap:15px;
-            margin-top:25px;
-        }
-        .flash-success{
-    padding:12px;
-    margin-bottom:20px;
-    border-radius:5px;
-    color:white;
-    background:#16a34a;
-}
-
-    .flash-danger{
-    padding:12px;
-    margin-bottom:20px;
-    border-radius:5px;
-    color:white;
-    background:#dc2626;
-}
-
-    </style>
-
-</head>
-
-<body>
-
-<div class="navbar">
-    <h2>Smart Finance Insights - My Profile</h2>
-</div>
-
-<div class="container">
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-
-            {% if category == "success" %}
-                <div class="flash-success">
+    <!-- Profile Header Card -->
+    <div class="card profile-header-card" style="text-align: center; padding: 36px 24px; margin-bottom: 24px;">
+        <div class="profile-avatar-wrapper" style="margin-bottom: 16px;">
+            {% if user.profile_image %}
+                <img src="{{ url_for('static', filename=user.profile_image) }}" alt="Profile" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color);">
+            {% elif profile and profile.profile_photo %}
+                <img src="{{ url_for('static', filename='uploads/profile_pictures/' + profile.profile_photo) }}" alt="Profile" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color);">
             {% else %}
-                <div class="flash-danger">
-            {% endif %}
-
-                {{ message }}
-
+                <div class="default-avatar" style="width: 110px; height: 110px; margin: 0 auto; border-radius: 50%; background: var(--primary-color); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 42px; font-weight: 800; border: 4px solid var(--primary-light);">
+                    {{ user.full_name[0]|upper if user and user.full_name else 'U' }}
                 </div>
-
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-<div class="profile-header">
-
-    <div class="profile-avatar">
-
-        {% if user.profile_image %}
-        <img src="{{ url_for('static', filename=user.profile_image) }}" alt="Profile">
-        {% elif profile and profile.profile_photo %}
-        <img src="{{ url_for('static', filename='uploads/profile_pictures/' + profile.profile_photo) }}" alt="Profile">
-        {% else %}
-        <div class="default-avatar">
-            {{ user.full_name[0]|upper }}
+            {% endif %}
         </div>
-        {% endif %}
 
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">{{ user.full_name }}</h2>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">{{ user.email }}</p>
+
+        <!-- Sub Tab Navigation -->
+        <div class="profile-tabs" style="display: flex; justify-content: center; gap: 12px;">
+            <a href="{{ url_for('profile.view_profile') }}" class="btn {% if mode != 'edit' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+                {{ icons.icon("user", size=14) }} View Details
+            </a>
+            <a href="{{ url_for('profile.view_profile', mode='edit') }}" class="btn {% if mode == 'edit' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+                {{ icons.icon("edit", size=14) }} Edit Profile
+            </a>
+        </div>
     </div>
 
-    <h2>{{ user.full_name }}</h2>
+    {% if mode == 'edit' or not profile %}
 
-    <p>
-        Manage your personal information and financial preferences.
-    </p>
+    <!-- Edit Profile Card -->
+    <div class="card form-card" style="margin-bottom: 24px;">
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            {{ icons.icon("edit", size=18) }} Edit Personal & Financial Profile
+        </h3>
+
+        <form action="{{ url_for('profile.save_profile') }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label class="form-label">Profile Photo</label>
+                <input type="file" name="profile_photo" accept=".jpg,.jpeg,.png,.webp" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Organization Name</label>
+                <input type="text" name="organization_name" value="{{ profile.organization_name if profile else '' }}" class="form-control" placeholder="e.g. Acme Corp">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Mobile Number</label>
+                <input type="text" name="mobile_number" value="{{ profile.mobile_number if profile else '' }}" class="form-control" placeholder="+91 9876543210">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Occupation</label>
+                <input type="text" name="occupation" value="{{ profile.occupation if profile else '' }}" class="form-control" placeholder="e.g. Software Engineer">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Income Source</label>
+                <input type="text" name="income_source" value="{{ profile.income_source if profile else '' }}" class="form-control" placeholder="e.g. Salary">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Monthly Income (₹)</label>
+                <input type="number" name="monthly_income" value="{{ profile.monthly_income if profile else '' }}" class="form-control" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Monthly Target (₹)</label>
+                <input type="number" name="monthly_target" value="{{ profile.monthly_target if profile else '' }}" class="form-control" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Currency</label>
+                <select name="currency" class="form-select">
+                    <option value="INR" {% if profile and profile.currency=="INR" %}selected{% endif %}>INR (₹)</option>
+                    <option value="USD" {% if profile and profile.currency=="USD" %}selected{% endif %}>USD ($)</option>
+                    <option value="EUR" {% if profile and profile.currency=="EUR" %}selected{% endif %}>EUR (€)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" name="dob" value="{{ profile.date_of_birth if profile and profile.date_of_birth else '' }}" class="form-control">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                {{ icons.icon("check", size=16) }} Save Profile Changes
+            </button>
+        </form>
+    </div>
+
+    <!-- Security & Password Change Card -->
+    <div class="card form-card">
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-lock" style="color: var(--primary-color);"></i> Change Security Password
+        </h3>
+
+        <form action="{{ url_for('profile.change_password') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" name="current_password" required class="form-control" placeholder="Enter current password">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" name="new_password" required class="form-control" placeholder="Enter new password">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" name="confirm_password" required class="form-control" placeholder="Confirm new password">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                {{ icons.icon("check", size=16) }} Update Password
+            </button>
+        </form>
+    </div>
+
+    {% else %}
+
+    <!-- View Profile Details Table -->
+    <div class="card">
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+            {{ icons.icon("user", size=18) }} Personal & Account Details
+        </h3>
+
+        <div class="table-responsive">
+            <table class="custom-table">
+                <tbody>
+                    <tr>
+                        <td style="width: 200px; font-weight: 700; color: var(--text-secondary);">Full Name</td>
+                        <td><strong>{{ user.full_name }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary);">Email Address</td>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary);">Organization</td>
+                        <td>{{ profile.organization_name or 'Not specified' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary);">Mobile Number</td>
+                        <td>{{ profile.mobile_number or 'Not specified' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary);">Occupation</td>
+                        <td>{{ profile.occupation or 'Not specified' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary);">Income Source</td>
+                        <td>{{ profile.income_source or 'Not specified' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary);">Monthly Income</td>
+                        <td>₹{{ "{:,.2f}".format(profile.monthly_income) if profile and profile.monthly_income else '0.00' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary);">Monthly Target</td>
+                        <td>₹{{ "{:,.2f}".format(profile.monthly_target) if profile and profile.monthly_target else '0.00' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary);">Currency</td>
+                        <td><span class="badge badge-info">{{ profile.currency or 'INR' }}</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-secondary);">Date of Birth</td>
+                        <td>{{ profile.date_of_birth or 'Not specified' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% endif %}
 
 </div>
 
-    <div class="tabs">
-
-        <a href="{{ url_for('profile.view_profile') }}"
-           class="tab-btn {% if mode != 'edit' %}active{% endif %}">
-            View Profile
-        </a>
-
-        <a href="{{ url_for('profile.view_profile', mode='edit') }}"
-           class="tab-btn {% if mode == 'edit' %}active{% endif %}">
-            Edit Profile
-        </a>
-
-    </div>
-
-
-{% if mode == 'edit' or not profile %}
-
-<h2>Edit Profile</h2>
-
-<form action="{{ url_for('profile.save_profile') }}"
-      method="POST"
-      enctype="multipart/form-data">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-<label>Profile Photo</label>
-
-<input
-type="file"
-name="profile_photo"
-accept=".jpg,.jpeg,.png,.webp">
-
-<label>Organization Name</label>
-<input
-type="text"
-name="organization_name"
-value="{{ profile.organization_name if profile else '' }}">
-
-<label>Mobile Number</label>
-<input type="text"
-name="mobile_number"
-value="{{ profile.mobile_number if profile else '' }}">
-
-<label>Occupation</label>
-<input type="text"
-name="occupation"
-value="{{ profile.occupation if profile else '' }}">
-
-<label>Income Source</label>
-<input type="text"
-name="income_source"
-value="{{ profile.income_source if profile else '' }}">
-
-<label>Monthly Income</label>
-<input type="number"
-name="monthly_income"
-value="{{ profile.monthly_income if profile else '' }}">
-
-<label>Monthly Target</label>
-<input type="number"
-name="monthly_target"
-value="{{ profile.monthly_target if profile else '' }}">
-
-<label>Currency</label>
-
-<select name="currency">
-
-<option value="INR"
-{% if profile and profile.currency=="INR" %}selected{% endif %}>
-INR (₹)
-</option>
-
-<option value="USD"
-{% if profile and profile.currency=="USD" %}selected{% endif %}>
-USD ($)
-</option>
-
-<option value="EUR"
-{% if profile and profile.currency=="EUR" %}selected{% endif %}>
-EUR (€)
-</option>
-
-</select>
-
-<label>Date of Birth</label>
-
-<input
-type="date"
-name="dob"
-value="{{ profile.date_of_birth if profile and profile.date_of_birth else '' }}">
-
-<button type="submit" style="margin-top: 10px;">
-Save Profile
-</button>
-
-</form>
-<hr style="margin:35px 0;">
-
-<h2>Change Password</h2>
-
-<form action="{{ url_for('profile.change_password') }}" method="POST">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-<label>Current Password</label>
-
-<input
-type="password"
-name="current_password"
-required>
-
-<label>New Password</label>
-
-<input
-type="password"
-name="new_password"
-required>
-
-<label>Confirm New Password</label>
-
-<input
-type="password"
-name="confirm_password"
-required>
-
-<button type="submit">
-Change Password
-</button>
-
-</form>
-
-{% else %}
-
-
-<table>
-
-<tr>
-<td>Name</td>
-<td>{{ user.full_name }}</td>
-</tr>
-
-<tr>
-<td>Email</td>
-<td>{{ user.email }}</td>
-</tr>
-
-<tr>
-<td>Organization</td>
-<td>{{ profile.organization_name }}</td>
-</tr>
-
-<tr>
-<td>Mobile Number</td>
-<td>{{ profile.mobile_number }}</td>
-</tr>
-
-<tr>
-<td>Occupation</td>
-<td>{{ profile.occupation }}</td>
-</tr>
-
-<tr>
-<td>Income Source</td>
-<td>{{ profile.income_source }}</td>
-</tr>
-
-<tr>
-<td>Monthly Income</td>
-<td>{{ profile.monthly_income }}</td>
-</tr>
-
-<tr>
-<td>Monthly Target</td>
-<td>{{ profile.monthly_target }}</td>
-</tr>
-
-<tr>
-<td>Currency</td>
-<td>{{ profile.currency }}</td>
-</tr>
-
-<tr>
-<td>Date of Birth</td>
-<td>{{ profile.date_of_birth }}</td>
-</tr>
-
-</table>
-
-
-
-{% endif %}
-
-</div>
-
-</body>
-
-</html>
+{% endblock %}

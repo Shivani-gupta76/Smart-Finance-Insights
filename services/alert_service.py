@@ -5,7 +5,7 @@ from models.budget import Budget
 from models.goal import Goal
 from models.expense import Expense
 from models.income import Income
-from services.spending_analysis import get_spending_analysis
+from services.spending_analysis import get_spending_analysis, resolve_month_year
 
 
 def check_and_create_alerts(user_id):
@@ -40,61 +40,27 @@ def check_and_create_alerts(user_id):
             db.session.add(alert)
             new_alerts.append(alert)
 
-    # 1. Budget Alerts (80% and 100% per budget)
+    # 1. Budget Alerts (80% and 100% per budget for its corresponding month/year)
     budgets = Budget.query.filter_by(user_id=user_id).all()
-
     user_expenses = Expense.query.filter_by(user_id=user_id).all()
     first_day_curr = date(today.year, today.month, 1)
-    curr_m_exp = [e for e in user_expenses if e.expense_date and e.expense_date >= first_day_curr]
-
-    
-
-
-    # Map budget amounts to categories for realistic presentation alert labels
-    category_budget_map = {
-        1500.0: ("Transportation", "Transport"),
-        1000.0: ("Entertainment", "Entertainment"),
-        2500.0: ("Food & Dining", "Food"),
-        2000.0: ("Shopping", "Shopping")
-    }
+    curr_m_exp = [e for e in user_expenses if e.expense_date and first_day_curr <= e.expense_date <= today]
 
     for b in budgets:
-        if b.goal and b.goal.category:
-            cat_key = b.goal.category.lower()
-            cat_spent = sum(
-                e.amount for e in curr_m_exp
-                if e.category.lower() == cat_key
-            )
-
-            if b.monthly_budget > 0 and (cat_spent / b.monthly_budget) >= 0.8:
-                b_cat_label = f"{b.goal.category} Budget"
-                total_spent = cat_spent
-            else:
-                b_cat_label = f"{b.month} {b.year} budget"
-                total_spent = sum(e.amount for e in curr_m_exp)
-
-        elif b.monthly_budget in category_budget_map:
-            label_name, cat_key = category_budget_map[b.monthly_budget]
-            cat_spent = sum(
-                e.amount for e in curr_m_exp
-                if e.category.lower() == cat_key.lower()
-            )
-
-            if b.monthly_budget > 0 and (cat_spent / b.monthly_budget) >= 0.8:
-                b_cat_label = f"{label_name} budget"
-                total_spent = cat_spent
-            else:
-                b_cat_label = f"{b.month} {b.year} budget"
-                total_spent = sum(e.amount for e in curr_m_exp)
-
-        else:
-            b_cat_label = f"{b.month} {b.year} budget"
+        b_month_name, b_month_num, b_year_num, b_start, b_end = resolve_month_year(b.month, b.year)
+        b_m_exp = [e for e in user_expenses if e.expense_date and b_start <= e.expense_date <= b_end]
+        
+        b_cat_label = f"{b.month} {b.year} budget"
+        if b_m_exp:
+            total_spent = sum(e.amount for e in b_m_exp)
+        elif (b_month_num == today.month and b_year_num == today.year) or len(budgets) == 1:
             total_spent = sum(e.amount for e in curr_m_exp)
+        else:
+            total_spent = 0.0
 
         if b.monthly_budget > 0:
             usage_pct = (total_spent / b.monthly_budget) * 100
             rem_or_over = abs(total_spent - b.monthly_budget)
-
             if usage_pct >= 100:
                 add_alert_if_not_exists(
                     alert_type=f"budget_exceeded_{b.id}",
@@ -102,7 +68,6 @@ def check_and_create_alerts(user_id):
                     message=f"You have exceeded your {b_cat_label} by ₹{rem_or_over:,.0f}.",
                     severity="danger"
                 )
-
             elif usage_pct >= 80:
                 add_alert_if_not_exists(
                     alert_type=f"budget_warning_{b.id}",

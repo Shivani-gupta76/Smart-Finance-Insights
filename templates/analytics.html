@@ -1,3 +1,4 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -24,12 +25,15 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
     .platform-header h1 {
         font-size: 24px;
         font-weight: 700;
-        color: #0F172A;
+        color: var(--text-primary, #0F172A);
         margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
     .platform-header p {
-        color: #64748B;
+        color: var(--text-secondary, #64748B);
         font-size: 14px;
         margin: 0;
     }
@@ -39,32 +43,36 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
         display: flex;
         align-items: center;
         gap: 8px;
-        border-bottom: 2px solid #E2E8F0;
+        border-bottom: 2px solid var(--card-border, #E2E8F0);
         margin-bottom: 24px;
+        flex-wrap: wrap;
     }
 
     .tab-btn {
         padding: 12px 20px;
         border: none;
         background: transparent;
-        color: #64748B;
+        color: var(--text-secondary, #64748B);
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
         border-bottom: 3px solid transparent;
         margin-bottom: -2px;
         transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .tab-btn:hover {
-        color: #2563EB;
+        color: var(--primary-color, #2563EB);
     }
 
     .tab-btn.active {
-        color: #2563EB;
-        border-bottom-color: #2563EB;
-        background: #EFF6FF;
-        border_radius: 8px 8px 0 0;
+        color: var(--primary-color, #2563EB);
+        border-bottom-color: var(--primary-color, #2563EB);
+        background: var(--primary-light, #EFF6FF);
+        border-radius: 8px 8px 0 0;
     }
 
     .tab-content {
@@ -85,27 +93,27 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
     .filter-btn {
         padding: 5px 12px;
         border-radius: 15px;
-        border: 1px solid #CBD5E1;
-        background: #ffffff;
-        color: #475569;
+        border: 1px solid var(--card-border, #CBD5E1);
+        background: var(--card-bg, #ffffff);
+        color: var(--text-secondary, #475569);
         font-size: 12px;
         font-weight: 600;
         cursor: pointer;
     }
 
     .filter-btn.active {
-        background: #2563EB;
+        background: var(--primary-color, #2563EB);
         color: #ffffff;
-        border-color: #2563EB;
+        border-color: var(--primary-color, #2563EB);
     }
 
     /* Section Cards */
     .section-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 20px;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        background: var(--card-bg, #ffffff);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid var(--card-border, #E2E8F0);
+        box-shadow: var(--card-shadow, 0 4px 12px rgba(0, 0, 0, 0.05));
         margin-bottom: 24px;
     }
 
@@ -119,7 +127,7 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
     .section-card-header h2 {
         font-size: 18px;
         font-weight: 700;
-        color: #0F172A;
+        color: var(--text-primary, #0F172A);
         margin: 0;
         display: flex;
         align-items: center;
@@ -151,10 +159,10 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
         font-weight: 700;
     }
 
-    .badge-status.healthy { background: #DCFCE7; color: #15803D; }
-    .badge-status.normal { background: #E0F2FE; color: #0369A1; }
-    .badge-status.warning { background: #FEF3C7; color: #B45309; }
-    .badge-status.exceeded { background: #FEE2E2; color: #B91C1C; }
+    .badge-status.healthy { background: var(--success-bg, #DCFCE7); color: var(--success-color, #15803D); }
+    .badge-status.normal { background: var(--info-bg, #E0F2FE); color: var(--info-color, #0369A1); }
+    .badge-status.warning { background: var(--warning-bg, #FEF3C7); color: var(--warning-color, #B45309); }
+    .badge-status.exceeded { background: var(--danger-bg, #FEE2E2); color: var(--danger-color, #B91C1C); }
 </style>
 {% endblock %}
 
@@ -164,18 +172,45 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
     <!-- Title Header -->
     <div class="platform-header">
         <div>
-            <h1><i class="fa-solid fa-chart-pie"></i> Finance Analytics Platform for Financial Reporting and Budget Tracking</h1>
+            <h1>{{ icons.icon("analytics", size=24) }} Finance Analytics Platform for Financial Reporting and Budget Tracking</h1>
             <p>Comprehensive financial reporting, spending intelligence, budget optimization, and goal progress tracking.</p>
+            <p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 700; color: #2563EB;">Financial Analytics — {{ selected_month }} {{ selected_year }}</p>
         </div>
+    </div>
+
+    <!-- Main Month/Year Selector -->
+    <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <form method="GET" action="{{ url_for('analytics.analytics') }}" id="main-analytics-month-form" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <label style="font-size: 13px; font-weight: 700; color: #0F172A; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-calendar-days" style="color: #2563EB;"></i> Analyze Month:
+            </label>
+            <select name="month" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; font-weight: 600; color: #0F172A; background: #ffffff; cursor: pointer;">
+                {% set month_options = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] %}
+                {% for m in month_options %}
+                    <option value="{{ m }}" {% if selected_month.lower() == m.lower() %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+            </select>
+            <select name="year" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; font-weight: 600; color: #0F172A; background: #ffffff; cursor: pointer;">
+                <option value="{{ current_year }}" {% if selected_year == current_year %}selected{% endif %}>{{ current_year }}</option>
+                <option value="{{ current_year - 1 }}" {% if selected_year == (current_year - 1) %}selected{% endif %}>{{ current_year - 1 }}</option>
+                <option value="{{ current_year + 1 }}" {% if selected_year == (current_year + 1) %}selected{% endif %}>{{ current_year + 1 }}</option>
+            </select>
+            <button type="submit" class="btn-save" style="padding: 6px 16px; font-size: 13px; border-radius: 8px; background: #2563EB; color: #ffffff; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-filter"></i> Apply
+            </button>
+        </form>
+        <span style="font-size: 13px; font-weight: 700; color: #2563EB;">
+            Financial Analytics — {{ selected_month }} {{ selected_year }}
+        </span>
     </div>
 
     <!-- Top Navigation Tabs -->
     <div class="analytics-tabs">
-        <button class="tab-btn active" onclick="switchTab('overview')"><i class="fa-solid fa-gauge-high"></i> Overview</button>
-        <button class="tab-btn" onclick="switchTab('spending')"><i class="fa-solid fa-chart-pie"></i> Spending Analysis</button>
-        <button class="tab-btn" onclick="switchTab('recommendations')"><i class="fa-solid fa-lightbulb"></i> Budget Recommendations</button>
-        <button class="tab-btn" onclick="switchTab('trends')"><i class="fa-solid fa-arrow-trend-up"></i> Trends & Predictions</button>
-        <button class="tab-btn" onclick="switchTab('health')"><i class="fa-solid fa-shield-halved"></i> Financial Health Score</button>
+        <button class="tab-btn active" onclick="switchTab('overview')">{{ icons.icon("dashboard", size=16) }} Overview</button>
+        <button class="tab-btn" onclick="switchTab('spending')">{{ icons.icon("pie-chart", size=16) }} Spending Analysis</button>
+        <button class="tab-btn" onclick="switchTab('recommendations')">{{ icons.icon("calculator", size=16) }} Budget Recommendations</button>
+        <button class="tab-btn" onclick="switchTab('trends')">{{ icons.icon("trend-up", size=16) }} Trends & Predictions</button>
+        <button class="tab-btn" onclick="switchTab('health')">{{ icons.icon("shield", size=16) }} Financial Health Score</button>
     </div>
 
     <!-- =========================================================
@@ -344,10 +379,10 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
             <div class="section-card-header">
                 <h2><i class="fa-solid fa-chart-pie"></i> Spending Pattern Analysis</h2>
                 <div class="filter-btn-group">
-                    <button class="filter-btn active">This Month</button>
-                    <button class="filter-btn">Last Month</button>
-                    <button class="filter-btn">Last 3 Months</button>
-                    <button class="filter-btn">All Time</button>
+                    <button class="filter-btn active" onclick="selectSpendingPeriod('this_month')">This Month</button>
+                    <button class="filter-btn" onclick="selectSpendingPeriod('last_month')">Last Month</button>
+                    <button class="filter-btn" onclick="selectSpendingPeriod('last_3_months')">Last 3 Months</button>
+                    <button class="filter-btn" onclick="selectSpendingPeriod('all_time')">All Time</button>
                 </div>
             </div>
             <div class="grid-2col">
@@ -363,10 +398,11 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
                                 <th>% of Total</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% for cat in spending_analysis.categories %}
-                                {% set amt = spending_analysis.category_totals[cat] %}
-                                {% set pct = ((amt / spending_analysis.total_expenses * 100)|round(1)) if spending_analysis.total_expenses > 0 else 0 %}
+                        <tbody id="spendingCategoryTableBody">
+                            {% set period_curr = spending_periods_data.this_month %}
+                            {% for cat in period_curr.categories %}
+                                {% set amt = period_curr.category_totals[cat] %}
+                                {% set pct = ((amt / period_curr.total_expenses * 100)|round(1)) if period_curr.total_expenses > 0 else 0 %}
                                 <tr>
                                     <td><strong>{{ cat }}</strong></td>
                                     <td>₹{{ "{:,.0f}".format(amt) }}</td>
@@ -375,67 +411,6 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
                             {% endfor %}
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. MONTHLY TREND & WEEKLY PATTERN -->
-        <div class="grid-2col">
-            <!-- Monthly Spending Trend (Last 6 Months) -->
-            <div class="section-card">
-                <div class="section-card-header">
-                    <h2><i class="fa-solid fa-chart-bar"></i> Monthly Spending Trend (Last 6 Months)</h2>
-                </div>
-                <div style="height: 250px;">
-                    <canvas id="monthlyTrendChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Weekly Spending Pattern (Current Month) -->
-            <div class="section-card">
-                <div class="section-card-header">
-                    <h2><i class="fa-solid fa-calendar-week"></i> Weekly Spending Pattern (Current Month)</h2>
-                </div>
-                <div style="height: 250px;">
-                    <canvas id="weeklyPatternChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. CURRENT MONTH VS PREVIOUS MONTH COMPARISON -->
-        <div class="section-card">
-            <div class="section-card-header">
-                <h2><i class="fa-solid fa-code-compare"></i> Current Month vs Previous Month Comparison</h2>
-            </div>
-            <div class="grid-4col">
-                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
-                    <span style="font-size: 13px; color: #64748B; display: block;">Current Month Spending</span>
-                    <strong style="font-size: 20px; color: #0F172A;">₹{{ "{:,.0f}".format(advanced_patterns.month_vs_prev.curr_total) }}</strong>
-                    <span style="font-size: 12px; color: #64748B; display: block; margin-top: 4px;">{{ advanced_patterns.month_vs_prev.curr_count }} transactions</span>
-                </div>
-
-                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
-                    <span style="font-size: 13px; color: #64748B; display: block;">Previous Month Spending</span>
-                    <strong style="font-size: 20px; color: #0F172A;">₹{{ "{:,.0f}".format(advanced_patterns.month_vs_prev.prev_total) }}</strong>
-                    <span style="font-size: 12px; color: #64748B; display: block; margin-top: 4px;">{{ advanced_patterns.month_vs_prev.prev_count }} transactions</span>
-                </div>
-
-                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
-                    <span style="font-size: 13px; color: #64748B; display: block;">Net Change Amount</span>
-                    <strong style="font-size: 20px; color: {% if advanced_patterns.month_vs_prev.change_amount > 0 %}#DC2626{% else %}#16A34A{% endif %};">
-                        {% if advanced_patterns.month_vs_prev.change_amount > 0 %}+{% endif %}₹{{ "{:,.0f}".format(advanced_patterns.month_vs_prev.change_amount) }}
-                    </strong>
-                </div>
-
-                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
-                    <span style="font-size: 13px; color: #64748B; display: block;">Percentage Difference</span>
-                    <strong style="font-size: 20px; color: {% if advanced_patterns.month_vs_prev.pct_change > 0 %}#DC2626{% else %}#16A34A{% endif %};">
-                        {% if advanced_patterns.month_vs_prev.has_prev_data %}
-                            {% if advanced_patterns.month_vs_prev.pct_change > 0 %}+{% endif %}{{ advanced_patterns.month_vs_prev.pct_change }}%
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </strong>
                 </div>
             </div>
         </div>
@@ -450,27 +425,66 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
         <!-- 1. BUDGET ANALYTICS STATUS -->
         <div class="section-card">
             <div class="section-card-header">
-                <h2><i class="fa-solid fa-bullseye"></i> Budget Analytics & Usage Status</h2>
+                <h2><i class="fa-solid fa-bullseye"></i> Budget Analytics & Usage Status ({{ rec_month }} {{ rec_year }})</h2>
+                <form method="GET" action="{{ url_for('analytics.analytics') }}#tab-recommendations" id="rec-month-form" style="display:inline-flex; align-items:center; gap:8px;">
+                    <input type="hidden" name="active_tab" value="recommendations">
+                    <label style="font-size: 13px; font-weight: 600; color: #475569;">Analyze Month:</label>
+                    <select name="month" onchange="document.getElementById('rec-month-form').submit()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; font-weight: 600; color: #0F172A; background: #ffffff; cursor: pointer;">
+                        {% set month_options = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] %}
+                        {% for m in month_options %}
+                            <option value="{{ m }}" {% if rec_month.lower() == m.lower() %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="year" onchange="document.getElementById('rec-month-form').submit()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 13px; font-weight: 600; color: #0F172A; background: #ffffff; cursor: pointer;">
+                        <option value="{{ current_year }}" {% if rec_year == current_year %}selected{% endif %}>{{ current_year }}</option>
+                        <option value="{{ current_year - 1 }}" {% if rec_year == (current_year - 1) %}selected{% endif %}>{{ current_year - 1 }}</option>
+                        <option value="{{ current_year + 1 }}" {% if rec_year == (current_year + 1) %}selected{% endif %}>{{ current_year + 1 }}</option>
+                    </select>
+                </form>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                {% for b_item in budget_analytics_list %}
-                <div style="background: #F8FAFC; border-radius: 12px; padding: 18px; border: 1px solid #E2E8F0;">
+
+            {% if rec_budget_info and rec_budget_info.has_budget %}
+                <div style="background: #F8FAFC; border-radius: 12px; padding: 18px; border: 1px solid #E2E8F0; margin-bottom: 16px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                        <strong style="font-size: 16px; color: #0F172A;">{{ b_item.budget.month }} {{ b_item.budget.year }} Budget</strong>
-                        <span class="badge-status {{ b_item.status_class }}">{{ b_item.status }}</span>
+                        <strong style="font-size: 16px; color: #0F172A;">{{ rec_month }} {{ rec_year }} Budget Status</strong>
+                        <span class="badge-status {{ rec_budget_info.status_class }}">{{ rec_budget_info.status }}</span>
                     </div>
                     <div style="margin-bottom: 10px;">
                         <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748B; margin-bottom: 4px;">
-                            <span>Spent: ₹{{ "{:,.0f}".format(b_item.actual_spent) }}</span>
-                            <span>Limit: ₹{{ "{:,.0f}".format(b_item.budget.monthly_budget) }}</span>
+                            <span>Spent: ₹{{ "{:,.0f}".format(rec_budget_info.actual_spent) }}</span>
+                            <span>Limit: ₹{{ "{:,.0f}".format(rec_budget_info.budget.monthly_budget) }}</span>
                         </div>
                         <div class="progress-bar-container" style="height: 8px;">
-                            <div class="progress-bar-fill" style="width: {{ b_item.usage_pct if b_item.usage_pct <= 100 else 100 }}%; background: {% if b_item.usage_pct >= 100 %}#DC2626{% elif b_item.usage_pct >= 80 %}#D97706{% else %}#16A34A{% endif %};"></div>
+                            <div class="progress-bar-fill" style="width: {{ rec_budget_info.usage_pct if rec_budget_info.usage_pct <= 100 else 100 }}%; background: {% if rec_budget_info.usage_pct >= 100 %}#DC2626{% elif rec_budget_info.usage_pct >= 80 %}#D97706{% else %}#16A34A{% endif %};"></div>
                         </div>
                     </div>
                     <div style="font-size: 12px; color: #64748B; display: flex; justify-content: space-between;">
-                        <span>Usage: <strong>{{ b_item.usage_pct }}%</strong></span>
-                        <span>Remaining: <strong>₹{{ "{:,.0f}".format(b_item.rem_amount) }}</strong></span>
+                        <span>Usage: <strong>{{ rec_budget_info.usage_pct }}%</strong></span>
+                        <span>Remaining: <strong>₹{{ "{:,.0f}".format(rec_budget_info.rem_amount) }}</strong></span>
+                    </div>
+                    {% if rec_budget_info.linked_goal %}
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #E2E8F0; font-size: 12px; color: #2563EB;">
+                            🎯 Linked Goal: <strong>{{ rec_budget_info.linked_goal.goal_name }}</strong> (Target: ₹{{ "{:,.0f}".format(rec_budget_info.linked_goal.target_amount) }})
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 12px; padding: 18px; color: #92400E; margin-bottom: 16px; text-align: center;">
+                    <h4 style="margin: 0 0 4px 0; font-size: 15px;"><i class="fa-solid fa-circle-info"></i> No Budget Set for {{ rec_month }} {{ rec_year }}</h4>
+                    <p style="margin: 0; font-size: 13px;">No active budget record exists for {{ rec_month }} {{ rec_year }}. Total recorded expenses for {{ rec_month }}: <strong>₹{{ "{:,.0f}".format(rec_budget_info.actual_spent) }}</strong>.</p>
+                </div>
+            {% endif %}
+
+            <h3 style="font-size: 14px; font-weight: 700; color: #475569; margin: 16px 0 10px 0;">All Configured Monthly Budgets</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+                {% for b_item in budget_analytics_list %}
+                <div style="background: #ffffff; border-radius: 10px; padding: 14px; border: 1px solid #E2E8F0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <strong style="font-size: 14px; color: #0F172A;">{{ b_item.budget.month }} {{ b_item.budget.year }}</strong>
+                        <span class="badge-status {{ b_item.status_class }}">{{ b_item.status }}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #64748B;">
+                        Spent: ₹{{ "{:,.0f}".format(b_item.actual_spent) }} / ₹{{ "{:,.0f}".format(b_item.budget.monthly_budget) }} ({{ b_item.usage_pct }}%)
                     </div>
                 </div>
                 {% endfor %}
@@ -480,21 +494,16 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
         <!-- 2. BUDGET RECOMMENDATIONS CARDS -->
         <div class="section-card">
             <div class="section-card-header">
-                <h2><i class="fa-solid fa-lightbulb"></i> Rule-Based Budget Recommendations</h2>
-                <span class="badge badge-info">AI Powered — Rule-Based</span>
+                <h2><i class="fa-solid fa-lightbulb"></i> Rule-Based Budget Recommendations ({{ rec_month }} {{ rec_year }})</h2>
+                <span class="badge badge-info">Explainable — Rule-Based</span>
             </div>
             <div class="grid-2col">
+                {% for rec_msg in rec_rule_recommendations %}
                 <div style="background: #F0FDF4; border: 1px solid #BBF7D0; padding: 18px; border-radius: 12px; color: #15803D;">
-                    <h4 style="margin: 0 0 6px 0; font-size: 15px;"><i class="fa-solid fa-utensils"></i> Reduce Dining & Food Expenses</h4>
-                    <p style="margin: 0 0 8px 0; font-size: 13px;">Food spending is currently at 40% of total expenses. Capping restaurant orders could save up to ₹1,500/month.</p>
-                    <strong style="font-size: 13px;">Potential Monthly Savings: ₹1,500 | Annual: ₹18,000</strong>
+                    <h4 style="margin: 0 0 6px 0; font-size: 15px;"><i class="fa-solid fa-lightbulb"></i> Monthly Recommendation</h4>
+                    <p style="margin: 0; font-size: 13px; line-height: 1.5;">{{ rec_msg }}</p>
                 </div>
-
-                <div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 18px; border-radius: 12px; color: #1E40AF;">
-                    <h4 style="margin: 0 0 6px 0; font-size: 15px;"><i class="fa-solid fa-bag-shopping"></i> Optimize Shopping Subscriptions</h4>
-                    <p style="margin: 0 0 8px 0; font-size: 13px;">Shopping expenses spiked by 25% this month. Consolidating non-essential purchases will restore budget buffer.</p>
-                    <strong style="font-size: 13px;">Potential Monthly Savings: ₹1,000 | Annual: ₹12,000</strong>
-                </div>
+                {% endfor %}
             </div>
         </div>
 
@@ -542,154 +551,98 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
                     <strong style="font-size: 22px; color: #0F172A;">{{ goal_analytics_list|length }}</strong>
                 </div>
                 <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
-                    <span style="font-size: 13px; color: #64748B; display: block;">Active Goals</span>
-                    <strong style="font-size: 22px; color: #2563EB;">{{ active_count }}</strong>
-                </div>
-                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
-                    <span style="font-size: 13px; color: #64748B; display: block;">Near Completion (≥75%)</span>
-                    <strong style="font-size: 22px; color: #D97706;">{{ near_completion_count }}</strong>
-                </div>
-                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
                     <span style="font-size: 13px; color: #64748B; display: block;">Completed Goals</span>
                     <strong style="font-size: 22px; color: #16A34A;">{{ completed_count }}</strong>
                 </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-                {% for g_item in goal_analytics_list %}
-                <div style="background: #F8FAFC; border-radius: 12px; padding: 16px; border: 1px solid #E2E8F0;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <strong style="font-size: 15px; color: #0F172A;">🎯 {{ g_item.goal.goal_name }}</strong>
-                        <span class="badge-status {% if g_item.goal.status == 'Completed' %}healthy{% else %}normal{% endif %}">{{ g_item.goal.status }}</span>
-                    </div>
-                    <div style="font-size: 13px; color: #64748B; margin-bottom: 8px;">
-                        Target: ₹{{ "{:,.0f}".format(g_item.goal.target_amount) }} | Saved: ₹{{ "{:,.0f}".format(g_item.goal.current_amount) }}
-                    </div>
-                    <div class="progress-bar-container" style="height: 8px; margin-bottom: 6px;">
-                        <div class="progress-bar-fill" style="width: {{ g_item.prog_pct }}%;"></div>
-                    </div>
-                    <div style="font-size: 12px; color: #64748B; display: flex; justify-content: space-between;">
-                        <span>Progress: <strong>{{ g_item.prog_pct }}%</strong></span>
-                        <span>Remaining: <strong>₹{{ "{:,.0f}".format(g_item.rem_amt) }}</strong></span>
-                    </div>
+                <div style="background: #F8FAFC; padding: 16px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 13px; color: #64748B; display: block;">Active Goals</span>
+                    <strong style="font-size: 22px; color: #2563EB;">{{ active_count }}</strong>
                 </div>
-                {% endfor %}
             </div>
-        </div>
 
-        <!-- 2. GOAL-LINKED EXPENSE ANALYSIS -->
-        <div class="section-card">
-            <div class="section-card-header">
-                <h2><i class="fa-solid fa-receipt"></i> Goal-Linked Expense Analysis</h2>
-                <span class="badge badge-info">Real DB Goal <----> Expense Relationship</span>
-            </div>
-            <table class="analytics-table" style="margin-bottom: 20px;">
+            <table class="analytics-table">
                 <thead>
                     <tr>
                         <th>Goal Name</th>
-                        <th>Total Linked Expenses</th>
-                        <th>Expenses Count</th>
-                        <th>Average Expense Amount</th>
-                        <th>Latest Expense Date</th>
+                        <th>Target Amount</th>
+                        <th>Current Savings</th>
+                        <th>Progress %</th>
+                        <th>Remaining</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in goal_expense_analytics.goal_analysis_list %}
+                    {% for g_item in goal_analytics_list %}
                     <tr>
-                        <td><strong>🎯 {{ item.goal.goal_name }}</strong></td>
-                        <td><strong style="color: #2563EB;">₹{{ "{:,.0f}".format(item.total_expenses) }}</strong></td>
-                        <td>{{ item.count_expenses }}</td>
-                        <td>₹{{ "{:,.2f}".format(item.avg_expense) }}</td>
-                        <td>{{ item.latest_date }}</td>
+                        <td><strong>{{ g_item.goal.goal_name }}</strong></td>
+                        <td>₹{{ "{:,.0f}".format(g_item.goal.target_amount) }}</td>
+                        <td>₹{{ "{:,.0f}".format(g_item.goal.current_amount) }}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="progress-bar-container" style="flex: 1; height: 8px;">
+                                    <div class="progress-bar-fill" style="width: {{ g_item.prog_pct if g_item.prog_pct <= 100 else 100 }}%;"></div>
+                                </div>
+                                <span style="font-size: 12px; font-weight: 700;">{{ g_item.prog_pct }}%</span>
+                            </div>
+                        </td>
+                        <td>₹{{ "{:,.0f}".format(g_item.rem_amt) }}</td>
+                        <td>
+                            <span class="badge-status {% if g_item.goal.status == 'Completed' %}healthy{% else %}normal{% endif %}">
+                                {{ g_item.goal.status }}
+                            </span>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
 
+        <!-- 2. GOAL-LINKED EXPENSE ANALYTICS -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <h2><i class="fa-solid fa-chart-column"></i> Goal-Linked Expenses Analytics</h2>
+            </div>
             <div class="grid-2col">
-                <!-- Chart 1: Goal-Related Expenses by Goal -->
-                <div>
-                    <h3 style="font-size: 15px; color: #0F172A; margin: 0 0 10px 0;">Goal-Related Expenses by Goal</h3>
-                    <div style="height: 240px;">
-                        <canvas id="goalExpensesChart"></canvas>
-                    </div>
+                <div style="height: 280px;">
+                    <canvas id="goalExpensesChart"></canvas>
                 </div>
-
-                <!-- Chart 2: Expense Distribution -->
-                <div>
-                    <h3 style="font-size: 15px; color: #0F172A; margin: 0 0 10px 0;">Expense Distribution (Goal-Linked vs Regular)</h3>
-                    <div style="height: 240px;">
-                        <canvas id="goalVsRegularChart"></canvas>
-                    </div>
+                <div style="height: 280px;">
+                    <canvas id="goalVsRegularChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- 3. MONTHLY GOAL-LINKED EXPENSE TREND -->
+        <!-- 3. MONTHLY GOAL EXPENSE TREND -->
         <div class="section-card">
             <div class="section-card-header">
-                <h2><i class="fa-solid fa-arrow-trend-up"></i> Monthly Goal-Linked Expense Trend</h2>
+                <h2><i class="fa-solid fa-chart-line"></i> Monthly Goal-Linked Expense Trend</h2>
             </div>
             <div style="height: 250px;">
                 <canvas id="monthlyGoalExpenseTrendChart"></canvas>
             </div>
         </div>
 
-        <!-- 4. TREND FORECAST & CASH FLOW CHART -->
-        <div class="section-card">
-            <div class="section-card-header">
-                <h2><i class="fa-solid fa-chart-line"></i> 6-Month Cash Flow & Savings Forecast</h2>
-            </div>
-            <div style="height: 280px;">
-                <canvas id="trendsCashFlowChart"></canvas>
-            </div>
-        </div>
-
     </div>
 
     <!-- =========================================================
-         TAB 5: FINANCIAL HEALTH SCORE DASHBOARD
+         TAB 5: FINANCIAL HEALTH SCORE
     ========================================================= -->
     <div id="tab-health" class="tab-content">
-
-        <!-- 1. OVERALL SCORE HERO CARD -->
         {% if health_score %}
-        <div class="section-card" style="border-left: 6px solid {% if health_score.score >= 80 %}#16A34A{% elif health_score.score >= 60 %}#2563EB{% elif health_score.score >= 40 %}#D97706{% else %}#DC2626{% endif %};">
-            <div class="section-card-header">
-                <h2><i class="fa-solid fa-shield-halved" style="color: #2563EB;"></i> Overall Financial Health Score</h2>
-                <span class="badge-status {% if health_score.score >= 80 %}healthy{% elif health_score.score >= 60 %}normal{% elif health_score.score >= 40 %}warning{% else %}exceeded{% endif %}">
-                    Status: {{ health_score.status_label }}
-                </span>
-            </div>
-
-            <div class="grid-2col" style="align-items: center; margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 20px;">
-                    <div style="width: 90px; height: 90px; border-radius: 50%; background: {% if health_score.score >= 80 %}#DCFCE7{% elif health_score.score >= 60 %}#DBEAFE{% elif health_score.score >= 40 %}#FEF3C7{% else %}#FEE2E2{% endif %}; color: {% if health_score.score >= 80 %}#16A34A{% elif health_score.score >= 60 %}#2563EB{% elif health_score.score >= 40 %}#D97706{% else %}#DC2626{% endif %}; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 850; line-height: 1;">
-                        <span style="font-size: 30px;">{{ health_score.score }}</span>
-                        <span style="font-size: 11px; opacity: 0.85;">out of 100</span>
-                    </div>
-                    <div>
-                        <h3 style="margin: 0 0 6px 0; font-size: 20px; color: #0F172A;">
-                            Health Rating: {{ health_score.status_label }}
-                        </h3>
-                        <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.5;">{{ health_score.summary_explanation }}</p>
-                    </div>
-                </div>
-
+        <!-- 1. HEALTH SCORE HERO BANNER -->
+        <div class="section-card" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #ffffff;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
                 <div>
-                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748B; margin-bottom: 8px;">
-                        <span>Visual Score Index Gauge</span>
-                        <strong style="color: #0F172A; font-size: 15px;">{{ health_score.score }} / 100</strong>
-                    </div>
-                    <div style="width: 100%; height: 14px; background: #E2E8F0; border-radius: 12px; overflow: hidden; position: relative;">
-                        <div style="height: 100%; width: {{ health_score.score }}%; background: {% if health_score.score >= 80 %}#16A34A{% elif health_score.score >= 60 %}#2563EB{% elif health_score.score >= 40 %}#D97706{% else %}#DC2626{% endif %}; border-radius: 12px; transition: width 0.6s ease;"></div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94A3B8; margin-top: 6px;">
-                        <span>0 (At Risk)</span>
-                        <span>40 (Needs Attention)</span>
-                        <span>60 (Stable)</span>
-                        <span>80+ (Excellent)</span>
-                    </div>
+                    <span style="font-size: 12px; text-transform: uppercase; tracking: 1px; color: #94A3B8; font-weight: 700;">Comprehensive Assessment</span>
+                    <h2 style="font-size: 24px; margin: 4px 0 8px 0; color: #ffffff;">Financial Health Score Index</h2>
+                    <p style="margin: 0; color: #CBD5E1; font-size: 14px; max-width: 600px;">{{ health_score.summary_explanation }}</p>
+                </div>
+                <div style="text-align: center; background: rgba(255,255,255,0.08); padding: 20px 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.12);">
+                    <div style="font-size: 48px; font-weight: 800; color: #60A5FA; line-height: 1;">{{ health_score.score }}</div>
+                    <div style="font-size: 12px; color: #94A3B8; margin-top: 4px;">Out of 100 Points</div>
+                    <span class="badge-status {% if health_score.score >= 80 %}healthy{% elif health_score.score >= 60 %}normal{% elif health_score.score >= 40 %}warning{% else %}exceeded{% endif %}" style="margin-top: 8px; display: inline-block;">
+                        {{ health_score.status_label }}
+                    </span>
                 </div>
             </div>
         </div>
@@ -700,7 +653,6 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
                 <h2><i class="fa-solid fa-list-check"></i> Component Score Breakdown</h2>
             </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                <!-- Savings Score -->
                 <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-piggy-bank" style="color: #16A34A;"></i> Savings Health</strong>
@@ -709,7 +661,6 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
                     <p style="margin: 0; font-size: 12px; color: #64748B;">{{ health_score.breakdown[0].note }}</p>
                 </div>
 
-                <!-- Budget Score -->
                 <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-bullseye" style="color: #2563EB;"></i> Budget Health</strong>
@@ -718,7 +669,6 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
                     <p style="margin: 0; font-size: 12px; color: #64748B;">{{ health_score.breakdown[1].note }}</p>
                 </div>
 
-                <!-- Goal Progress Score -->
                 <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-trophy" style="color: #D97706;"></i> Goal Progress</strong>
@@ -727,7 +677,6 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
                     <p style="margin: 0; font-size: 12px; color: #64748B;">{{ health_score.breakdown[2].note }}</p>
                 </div>
 
-                <!-- Spending Health Score -->
                 <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-chart-pie" style="color: #8B5CF6;"></i> Spending Health</strong>
@@ -736,7 +685,6 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
                     <p style="margin: 0; font-size: 12px; color: #64748B;">{{ health_score.breakdown[3].note }}</p>
                 </div>
 
-                <!-- Risk / Alert Score -->
                 <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 16px; border-radius: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <strong style="font-size: 14px; color: #0F172A;"><i class="fa-solid fa-shield-cat" style="color: #EC4899;"></i> Risk & Alerts</strong>
@@ -749,7 +697,6 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
 
         <!-- 3. POSITIVE FACTORS & AREAS FOR IMPROVEMENT -->
         <div class="grid-2col">
-            <!-- Positive Financial Factors -->
             <div class="section-card">
                 <div class="section-card-header">
                     <h2><i class="fa-solid fa-circle-check" style="color: #16A34A;"></i> Positive Financial Factors</h2>
@@ -767,7 +714,6 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
                 {% endif %}
             </div>
 
-            <!-- Areas Needing Improvement -->
             <div class="section-card">
                 <div class="section-card-header">
                     <h2><i class="fa-solid fa-circle-exclamation" style="color: #D97706;"></i> Areas Needing Improvement</h2>
@@ -824,6 +770,7 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
     window.analyticsData = {
         categories: {{ spending_analysis.categories|tojson }},
         categoryAmounts: {{ spending_analysis.amounts|tojson }},
+        spendingPeriods: {{ spending_periods_data|tojson }},
         trendLabels: {{ cash_flow_trend.labels|tojson }},
         trendIncome: {{ cash_flow_trend.income|tojson }},
         trendExpenses: {{ cash_flow_trend.expenses|tojson }},
@@ -844,14 +791,26 @@ Finance Analytics Platform for Financial Reporting and Budget Tracking
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-        const targetBtn = event.currentTarget;
+        const targetBtn = document.querySelector(`.tab-btn[onclick*="${tabName}"]`);
         const targetContent = document.getElementById('tab-' + tabName);
 
         if (targetBtn && targetContent) {
             targetBtn.classList.add('active');
             targetContent.classList.add('active');
+            if (window.renderOrResizeCharts) {
+                window.renderOrResizeCharts(tabName);
+            }
         }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hash = window.location.hash ? window.location.hash.replace('#tab-', '') : '';
+        const activeTab = urlParams.get('active_tab') || hash || "{{ active_tab }}";
+        if (activeTab && document.getElementById('tab-' + activeTab)) {
+            switchTab(activeTab);
+        }
+    });
 </script>
 <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 {% endblock %}

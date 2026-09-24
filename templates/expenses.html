@@ -1,7 +1,8 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
-Expenses
+Expenses | FinSight — Smart Finance Insights
 {% endblock %}
 
 {% block css %}
@@ -15,10 +16,8 @@ Expense Management
 {% block content %}
 
 <div class="expense-container">
-
     <div class="expense-form">
-
-        <h2>Add New Expense</h2>
+        <h2><span style="display:inline-flex; align-items:center; color: var(--primary-color);">{{ icons.icon("plus", size=20) }}</span> Add New Expense</h2>
 
         <form method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -30,7 +29,6 @@ Expense Management
 
             <div class="form-group">
                 <label>Category</label>
-
                 <select name="category" required>
                     <option value="">Select Category</option>
                     <option>Food</option>
@@ -46,12 +44,11 @@ Expense Management
 
             <div class="form-group">
                 <label>Amount (₹)</label>
-                <input type="number" name="amount" step="0.01" required>
+                <input type="number" name="amount" step="0.01" placeholder="0.00" required>
             </div>
 
             <div class="form-group">
                 <label>Payment Method</label>
-
                 <select name="payment_method" required>
                     <option value="">Select Payment Method</option>
                     <option>Cash</option>
@@ -60,33 +57,28 @@ Expense Management
                     <option>Debit Card</option>
                     <option>Net Banking</option>
                 </select>
-
             </div>
 
             <!-- Account Selection -->
             <div class="form-group">
                 <label>Account</label>
-
                 <select name="account_id" required>
                     <option value="">Select Account</option>
-
                     {% for account in accounts %}
                     <option value="{{ account.id }}">
                         {{ account.account_name }} (₹{{ "%.2f"|format(account.balance) }})
                     </option>
                     {% endfor %}
-
                 </select>
             </div>
 
             <!-- Optional Linked Financial Goal -->
             <div class="form-group">
                 <label>Linked Financial Goal (Optional)</label>
-
                 <select name="goal_id">
                     <option value="none">None / No Goal</option>
                     {% for g in goals %}
-                    <option value="{{ g.id }}">🎯 {{ g.goal_name }} (Target: ₹{{ "{:,.0f}".format(g.target_amount) }})</option>
+                    <option value="{{ g.id }}">Target: ₹{{ "{:,.0f}".format(g.target_amount) }} — {{ g.goal_name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -98,97 +90,73 @@ Expense Management
 
             <div class="form-group">
                 <label>Description</label>
-                <textarea name="description" rows="4"></textarea>
+                <textarea name="description" rows="3" placeholder="Optional notes..."></textarea>
             </div>
 
             <button type="submit" class="btn-save">
-                Save Expense
+                {{ icons.icon("check", size=16) }} Save Expense
             </button>
-
         </form>
-
     </div>
-
 </div>
 
 <div class="expense-table">
+    <h2><span style="display:inline-flex; align-items:center; color: var(--primary-color);">{{ icons.icon("receipt", size=20) }}</span> My Expenses</h2>
 
-    <h2>My Expenses</h2>
-
-    <table>
-
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Linked Goal</th>
-                <th>Amount</th>
-                <th>Payment</th>
-                <th>Account</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            {% if expenses %}
-
-                {% for expense in expenses %}
-
+    <div class="table-responsive">
+        <table>
+            <thead>
                 <tr>
-
-                    <td>{{ expense.expense_date }}</td>
-                    <td>{{ expense.title }}</td>
-                    <td>{{ expense.category }}</td>
-                    <td>
-                        {% if expense.goal %}
-                            <span class="badge-goal-link" style="padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 12px; display: inline-block;">
-                                🎯 {{ expense.goal.goal_name }}
-                            </span>
-                        {% else %}
-                            <span style="color: #94A3B8; font-size: 12px;">None</span>
-                        {% endif %}
-                    </td>
-                    <td>₹{{ "%.2f"|format(expense.amount) }}</td>
-                    <td>{{ expense.payment_method }}</td>
-                    <td>{{ expense.account.account_name }}</td>
-
-                    <td>
-
-                        <a href="{{ url_for('expense.edit_expense', id=expense.id) }}"
-                           class="edit-btn">
-                            Edit
-                        </a>
-
-                        <a href="{{ url_for('expense.delete_expense', id=expense.id) }}"
-                           class="delete-btn"
-                           onclick="return confirm('Are you sure you want to delete this expense?')">
-                            Delete
-                        </a>
-
-                    </td>
-
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Linked Goal</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Account</th>
+                    <th>Actions</th>
                 </tr>
-
-                {% endfor %}
-
-            {% else %}
-
-                <tr>
-
-                    <td colspan="8" class="no-data">
-                        No expenses added yet.
-                    </td>
-
-                </tr>
-
-            {% endif %}
-
-        </tbody>
-
-    </table>
-
+            </thead>
+            <tbody>
+                {% if expenses %}
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.expense_date }}</td>
+                        <td><strong>{{ expense.title }}</strong></td>
+                        <td><span class="badge badge-info">{{ expense.category }}</span></td>
+                        <td>
+                            {% if expense.goal %}
+                                <span class="badge-goal-link" style="padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                                    {{ icons.icon("target", size=14) }} {{ expense.goal.goal_name }}
+                                </span>
+                            {% else %}
+                                <span style="color: var(--text-muted); font-size: 12px;">None</span>
+                            {% endif %}
+                        </td>
+                        <td><strong>₹{{ "%.2f"|format(expense.amount) }}</strong></td>
+                        <td>{{ expense.payment_method }}</td>
+                        <td>{{ expense.account.account_name }}</td>
+                        <td>
+                            <a href="{{ url_for('expense.edit_expense', id=expense.id) }}" class="edit-btn">
+                                {{ icons.icon("edit", size=14) }} Edit
+                            </a>
+                            <a href="{{ url_for('expense.delete_expense', id=expense.id) }}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this expense?')">
+                                {{ icons.icon("trash", size=14) }} Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="no-data">
+                            {{ icons.icon("receipt", size=28, class="no-data-svg") }}
+                            <p style="margin-top: 8px;">No expenses added yet.</p>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 {% endblock %}

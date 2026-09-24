@@ -1,14 +1,12 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
-Investments
+Investments | FinSight — Financial Intelligence
 {% endblock %}
 
 {% block css %}
-
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/investment.css') }}">
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/investment.css') }}">
 {% endblock %}
 
 {% block page_title %}
@@ -19,989 +17,364 @@ Investment Portfolio
 
 <div class="investment-page">
 
-
-    <!-- =========================================
-         PAGE HEADER
-    ========================================== -->
-
+    <!-- PAGE HEADER -->
     <div class="investment-header">
-
         <div>
-
-            <h1>
-                Investment Portfolio
-            </h1>
-
-            <p>
-                Track your investments, portfolio value and returns.
-            </p>
-
+            <h1>Investment Portfolio</h1>
+            <p>Track your investments, portfolio value and returns.</p>
         </div>
 
-        <a
-            href="#add-investment"
-            class="btn-primary"
-        >
-            + Add Investment
+        <a href="#add-investment" class="btn-primary" style="background: #8b5cf6; border-color: #8b5cf6;">
+            {{ icons.icon("plus", size=16) }} Add Investment
         </a>
-
     </div>
 
-
-    <!-- =========================================
-         PORTFOLIO SUMMARY CARDS
-    ========================================== -->
-
+    <!-- PORTFOLIO SUMMARY CARDS -->
     <div class="portfolio-cards">
-
-
         <!-- Total Investment Value -->
-
-        <div class="portfolio-card">
-
-            <div class="portfolio-icon">
-                📈
+        <div class="portfolio-card" style="border-top: 4px solid #8b5cf6;">
+            <div class="portfolio-icon" style="background: #f3e8ff; color: #8b5cf6;">
+                {{ icons.icon("trend-up", size=22) }}
             </div>
-
             <div>
-
-                <span>
-                    Total Investment Value
-                </span>
-
-                <h2>
-                    ₹{{ "{:,.0f}".format(total_investment_value | default(0)) }}
-                </h2>
-
-                <small>
-                    Current Portfolio Value
-                </small>
-
+                <span>Total Investment Value</span>
+                <h2 style="color: #8b5cf6;">₹{{ "{:,.0f}".format(total_investment_value | default(0)) }}</h2>
+                <small>Current Portfolio Value</small>
             </div>
-
         </div>
-
 
         <!-- Total Invested -->
-
         <div class="portfolio-card">
-
             <div class="portfolio-icon">
-                💼
+                {{ icons.icon("briefcase", size=22) }}
             </div>
-
             <div>
-
-                <span>
-                    Total Invested
-                </span>
-
-                <h2>
-                    ₹{{ "{:,.0f}".format(total_invested | default(0)) }}
-                </h2>
-
-                <small>
-                    Net Invested Amount
-                </small>
-
+                <span>Total Invested</span>
+                <h2>₹{{ "{:,.0f}".format(total_invested | default(0)) }}</h2>
+                <small>Net Invested Amount</small>
             </div>
-
         </div>
 
-
         <!-- Overall Returns -->
-
         <div class="portfolio-card">
-
             <div class="portfolio-icon">
-                💹
+                {{ icons.icon("analytics", size=22) }}
             </div>
-
             <div>
-
-                <span>
-                    Overall Returns
-                </span>
-
-                <h2>
-                    ₹{{ "{:,.0f}".format(overall_returns | default(0)) }}
-                </h2>
-
+                <span>Overall Returns</span>
+                <h2>₹{{ "{:,.0f}".format(overall_returns | default(0)) }}</h2>
                 {% if (return_percentage | default(0)) >= 0 %}
-
                     <small class="positive">
                         ▲ {{ return_percentage | default(0) }}%
                     </small>
-
                 {% else %}
-
                     <small class="negative">
                         ▼ {{ return_percentage | default(0) }}%
                     </small>
-
                 {% endif %}
-
             </div>
-
         </div>
-
 
         <!-- Total Holdings -->
-
         <div class="portfolio-card">
-
             <div class="portfolio-icon">
-                📊
+                {{ icons.icon("pie-chart", size=22) }}
             </div>
-
             <div>
-
-                <span>
-                    Total Holdings
-                </span>
-
-                <h2>
-                    {{ investments|length }}
-                </h2>
-
-                <small>
-                    Active investments
-                </small>
-
+                <span>Total Holdings</span>
+                <h2>{{ investments|length }}</h2>
+                <small>Active investments</small>
             </div>
-
         </div>
-
-
     </div>
 
-
-    <!-- =========================================
-         ASSET ALLOCATION + PERFORMANCE
-    ========================================== -->
-
+    <!-- ASSET ALLOCATION + PERFORMANCE -->
     <div class="investment-grid">
-
-
-<!-- =====================================================
-     ASSET ALLOCATION
-     ===================================================== -->
-
-<div class="investment-box">
-
-    <div class="box-header">
-
-        <div>
-            <h3>🥧 Asset Allocation</h3>
-
-            <p>
-                Distribution of your portfolio across asset types.
-            </p>
-        </div>
-
-    </div>
-
-
-    {% set chart_asset_types = asset_types | default([]) %}
-    {% set chart_asset_values = asset_values | default([]) %}
-    {% set chart_asset_percentages = asset_percentages | default([]) %}
-
-
-    {% if chart_asset_types %}
-
-        <div class="allocation-content">
-
-            <!-- Chart -->
-
-            <div class="allocation-chart">
-
-                <canvas id="assetAllocationChart"></canvas>
-
+        <!-- ASSET ALLOCATION -->
+        <div class="investment-box">
+            <div class="box-header">
+                <div>
+                    <h3><span style="display:inline-flex; align-items:center; color: #8b5cf6;">{{ icons.icon("pie-chart", size=20) }}</span> Asset Allocation</h3>
+                    <p>Distribution of your portfolio across asset types.</p>
+                </div>
             </div>
 
+            {% set chart_asset_types = asset_types | default([]) %}
+            {% set chart_asset_values = asset_values | default([]) %}
+            {% set chart_asset_percentages = asset_percentages | default([]) %}
 
-            <!-- Allocation List -->
-
-            <div class="allocation-list">
-
-                {% for i in range(chart_asset_types|length) %}
-
-                    <div class="allocation-item">
-
-                        <div>
-
-                            <span>
-                                {{ chart_asset_types[i] }}
-                            </span>
-
-                            <small>
-                                {{ chart_asset_percentages[i] }}%
-                            </small>
-
-                        </div>
-
-
-                        <strong>
-                            ₹{{ "{:,.0f}".format(
-                                chart_asset_values[i]
-                            ) }}
-                        </strong>
-
+            {% if chart_asset_types %}
+                <div class="allocation-content">
+                    <div class="allocation-chart">
+                        <canvas id="assetAllocationChart"></canvas>
                     </div>
 
-                {% endfor %}
-
-            </div>
-
+                    <div class="allocation-list">
+                        {% for i in range(chart_asset_types|length) %}
+                            <div class="allocation-item">
+                                <div>
+                                    <span>{{ chart_asset_types[i] }}</span>
+                                    <small>{{ chart_asset_percentages[i] }}%</small>
+                                </div>
+                                <strong>₹{{ "{:,.0f}".format(chart_asset_values[i]) }}</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        {{ icons.icon("analytics", size=28) }}
+                    </div>
+                    <p>No allocation data available.</p>
+                    <span>Add an investment to see your asset allocation.</span>
+                </div>
+            {% endif %}
         </div>
 
-    {% else %}
-
-        <div class="empty-state">
-
-            <div class="empty-icon">
-                📊
-            </div>
-
-            <p>
-                No allocation data available.
-            </p>
-
-            <span>
-                Add an investment to see your asset allocation.
-            </span>
-
-        </div>
-
-    {% endif %}
-
-</div>
-
-
-        <!-- =====================================
-             PORTFOLIO PERFORMANCE
-        ====================================== -->
-
+        <!-- PORTFOLIO PERFORMANCE -->
         <div class="investment-box">
-
             <div class="box-header">
-
-                <h3>
-                    📈 Portfolio Performance
-                </h3>
-
-                <span>
-                    Overall Return
-                </span>
-
+                <h3><span style="display:inline-flex; align-items:center; color: #8b5cf6;">{{ icons.icon("trend-up", size=20) }}</span> Portfolio Performance</h3>
+                <span>Overall Return</span>
             </div>
-
 
             <div class="performance-summary">
-
-
                 <div>
-
-                    <span>
-                        Portfolio Return
-                    </span>
-
-
+                    <span>Portfolio Return</span>
                     {% if (return_percentage | default(0)) >= 0 %}
-
-                        <strong class="positive">
-                            ▲ {{ return_percentage | default(0) }}%
-                        </strong>
-
+                        <strong class="positive">▲ {{ return_percentage | default(0) }}%</strong>
                     {% else %}
-
-                        <strong class="negative">
-                            ▼ {{ return_percentage | default(0) }}%
-                        </strong>
-
+                        <strong class="negative">▼ {{ return_percentage | default(0) }}%</strong>
                     {% endif %}
-
                 </div>
-
 
                 <div>
-
-                    <span>
-                        Absolute Return
-                    </span>
-
-                    <strong>
-                        ₹{{ "{:,.0f}".format(
-                            overall_returns | default(0)
-                        ) }}
-                    </strong>
-
+                    <span>Absolute Return</span>
+                    <strong>₹{{ "{:,.0f}".format(overall_returns | default(0)) }}</strong>
                 </div>
-
-
             </div>
-
 
             <div class="performance-placeholder">
-
                 {% if investments %}
-
-                    <canvas
-                        id="performanceChart">
-                    </canvas>
-
+                    <canvas id="performanceChart"></canvas>
                 {% else %}
-
-                    <p>
-                        Add investments to view portfolio performance.
-                    </p>
-
+                    <p>Add investments to view portfolio performance.</p>
                 {% endif %}
-
             </div>
-
-
         </div>
-
-
     </div>
 
-
-    <!-- =========================================
-         TOP HOLDINGS
-    ========================================== -->
-
+    <!-- TOP HOLDINGS -->
     <div class="investment-box holdings-box">
-
-
         <div class="box-header">
-
-            <h3>
-                💼 Top Holdings
-            </h3>
-
-            <span>
-                {{ investments|length }} holdings
-            </span>
-
+            <h3><span style="display:inline-flex; align-items:center; color: #8b5cf6;">{{ icons.icon("briefcase", size=20) }}</span> Top Holdings</h3>
+            <span class="badge badge-primary">{{ investments|length }} holdings</span>
         </div>
-
 
         {% if investments %}
-
             <div class="table-wrapper">
-
                 <table class="investment-table">
-
                     <thead>
-
                         <tr>
-
-                            <th>
-                                Instrument
-                            </th>
-
-                            <th>
-                                Type
-                            </th>
-
-                            <th>
-                                Quantity
-                            </th>
-
-                            <th>
-                                Current Value
-                            </th>
-
-                            <th>
-                                Invested Value
-                            </th>
-
-                            <th>
-                                Returns
-                            </th>
-
-                            <th>
-                                Action
-                            </th>
-
+                            <th>Instrument</th>
+                            <th>Type</th>
+                            <th>Quantity</th>
+                            <th>Current Value</th>
+                            <th>Invested Value</th>
+                            <th>Returns</th>
+                            <th>Action</th>
                         </tr>
-
                     </thead>
-
-
                     <tbody>
-
-
-                    <!-- TOP 5 HOLDINGS -->
-
                     {% for investment in top_holdings | default([]) %}
-
-
-                        {% set investment_return =
-                            investment.current_value
-                            - investment.invested_amount
-                        %}
-
-
+                        {% set investment_return = investment.current_value - investment.invested_amount %}
                         {% if investment.invested_amount > 0 %}
-
-                            {% set investment_return_percentage =
-                                (
-                                    investment_return
-                                    / investment.invested_amount
-                                ) * 100
-                            %}
-
+                            {% set investment_return_percentage = (investment_return / investment.invested_amount) * 100 %}
                         {% else %}
-
                             {% set investment_return_percentage = 0 %}
-
                         {% endif %}
 
-
                         <tr>
-
-
-                            <!-- Instrument -->
-
+                            <td><strong>{{ investment.instrument_name }}</strong></td>
+                            <td><span class="asset-badge">{{ investment.asset_type }}</span></td>
+                            <td>{{ investment.quantity }}</td>
+                            <td><strong>₹{{ "{:,.0f}".format(investment.current_value) }}</strong></td>
+                            <td>₹{{ "{:,.0f}".format(investment.invested_amount) }}</td>
                             <td>
-
-                                <strong>
-                                    {{ investment.instrument_name }}
-                                </strong>
-
-                            </td>
-
-
-                            <!-- Asset Type -->
-
-                            <td>
-
-                                <span class="asset-badge">
-                                    {{ investment.asset_type }}
-                                </span>
-
-                            </td>
-
-
-                            <!-- Quantity -->
-
-                            <td>
-                                {{ investment.quantity }}
-                            </td>
-
-
-                            <!-- Current Value -->
-
-                            <td>
-
-                                ₹{{ "{:,.0f}".format(
-                                    investment.current_value
-                                ) }}
-
-                            </td>
-
-
-                            <!-- Invested Value -->
-
-                            <td>
-
-                                ₹{{ "{:,.0f}".format(
-                                    investment.invested_amount
-                                ) }}
-
-                            </td>
-
-
-                            <!-- Returns -->
-
-                            <td>
-
                                 {% if investment_return >= 0 %}
-
                                     <span class="positive">
-
-                                        ▲
-
-                                        {{ "{:,.0f}".format(
-                                            investment_return
-                                        ) }}
-
-                                        <small>
-                                            (
-                                            {{ "%.2f"|format(
-                                                investment_return_percentage
-                                            ) }}
-                                            %)
-                                        </small>
-
+                                        ▲ ₹{{ "{:,.0f}".format(investment_return) }}
+                                        <small>({{ "%.2f"|format(investment_return_percentage) }}%)</small>
                                     </span>
-
                                 {% else %}
-
                                     <span class="negative">
-
-                                        ▼
-
-                                        {{ "{:,.0f}".format(
-                                            investment_return
-                                        ) }}
-
-                                        <small>
-                                            (
-                                            {{ "%.2f"|format(
-                                                investment_return_percentage
-                                            ) }}
-                                            %)
-                                        </small>
-
+                                        ▼ ₹{{ "{:,.0f}".format(investment_return) }}
+                                        <small>({{ "%.2f"|format(investment_return_percentage) }}%)</small>
                                     </span>
-
                                 {% endif %}
-
                             </td>
-
-
-                            <!-- Actions -->
-
                             <td>
-
-                                <a
-                                    href="{{ url_for(
-                                        'investment.edit_investment',
-                                        id=investment.id
-                                    ) }}"
-                                    class="btn-edit"
-                                >
-                                    Edit
+                                <a href="{{ url_for('investment.edit_investment', id=investment.id) }}" class="btn-edit">
+                                    {{ icons.icon("edit", size=14) }} Edit
                                 </a>
-
-
-                                <a
-                                    href="{{ url_for(
-                                        'investment.delete_investment',
-                                        id=investment.id
-                                    ) }}"
-                                    class="btn-delete"
-                                    onclick="return confirm(
-                                        'Delete this investment?'
-                                    )"
-                                >
-                                    Delete
+                                <a href="{{ url_for('investment.delete_investment', id=investment.id) }}" class="btn-delete" onclick="return confirm('Delete this investment?')">
+                                    {{ icons.icon("trash", size=14) }} Delete
                                 </a>
-
                             </td>
-
-
                         </tr>
-
-
                     {% endfor %}
 
-
                     {% if (top_holdings | default([]))|length == 0 %}
-
                         <tr>
-
-                            <td
-                                colspan="7"
-                                class="no-data"
-                            >
+                            <td colspan="7" class="no-data">
                                 No investment holdings available.
                             </td>
-
                         </tr>
-
                     {% endif %}
-
-
                     </tbody>
-
                 </table>
-
             </div>
-
-
         {% else %}
-
-
             <div class="empty-state">
-
                 <div class="empty-icon">
-                    💼
+                    {{ icons.icon("briefcase", size=28) }}
                 </div>
-
-                <p>
-                    No investments available.
-                </p>
-
-                <span>
-                    Add an investment below to start tracking your portfolio.
-                </span>
-
+                <p>No investments available.</p>
+                <span>Add an investment below to start tracking your portfolio.</span>
             </div>
-
-
         {% endif %}
-
-
     </div>
 
-
-    <!-- =========================================
-        ADD INVESTMENT
-    ========================================== -->
-
-    <div
-        class="investment-box add-investment-box"
-        id="add-investment"
-    >
-
-
+    <!-- ADD INVESTMENT -->
+    <div class="investment-box add-investment-box" id="add-investment">
         <div class="box-header">
-
             <div>
-
-                <h3>
-                    ➕ Add Investment
-                </h3>
-
-                <p>
-                    Add a stock, mutual fund, gold, debt or other asset.
-                </p>
-
+                <h3><span style="display:inline-flex; align-items:center; color: #8b5cf6;">{{ icons.icon("plus", size=20) }}</span> Add Investment</h3>
+                <p>Add a stock, mutual fund, gold, debt or other asset.</p>
             </div>
-
         </div>
 
-
-        <form
-            method="POST"
-            class="investment-form"
-        >
+        <form method="POST" class="investment-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-
-            <!-- Instrument + Asset Type -->
-
             <div class="form-row">
-
-
                 <div class="form-group">
-
-                    <label>
-                        Instrument Name
-                    </label>
-
-                    <input
-                        type="text"
-                        name="instrument_name"
-                        placeholder="Example: HDFC Bank"
-                        required
-                    >
-
+                    <label>Instrument Name</label>
+                    <input type="text" name="instrument_name" placeholder="Example: HDFC Bank" required>
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Asset Type
-                    </label>
-
-                    <select
-                        name="asset_type"
-                        required
-                    >
-
-                        <option value="">
-                            Select Asset Type
-                        </option>
-
-                        <option value="Equity">
-                            Equity
-                        </option>
-
-                        <option value="Mutual Fund">
-                            Mutual Fund
-                        </option>
-
-                        <option value="Debt">
-                            Debt
-                        </option>
-
-                        <option value="Gold">
-                            Gold
-                        </option>
-
-                        <option value="Cash">
-                            Cash
-                        </option>
-
-                        <option value="Other">
-                            Other
-                        </option>
-
+                    <label>Asset Type</label>
+                    <select name="asset_type" required>
+                        <option value="">Select Asset Type</option>
+                        <option value="Equity">Equity</option>
+                        <option value="Mutual Fund">Mutual Fund</option>
+                        <option value="Debt">Debt</option>
+                        <option value="Gold">Gold</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Other">Other</option>
                     </select>
-
                 </div>
-
-
             </div>
 
-
-            <!-- Quantity + Amounts -->
-
             <div class="form-row">
-
-
                 <div class="form-group">
-
-                    <label>
-                        Quantity
-                    </label>
-
-                    <input
-                        type="number"
-                        name="quantity"
-                        step="0.01"
-                        min="0"
-                        required
-                    >
-
+                    <label>Quantity</label>
+                    <input type="number" name="quantity" step="0.01" min="0" required>
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Invested Amount
-                    </label>
-
-                    <input
-                        type="number"
-                        name="invested_amount"
-                        step="0.01"
-                        min="0"
-                        required
-                    >
-
+                    <label>Invested Amount</label>
+                    <input type="number" name="invested_amount" step="0.01" min="0" required>
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Current Value
-                    </label>
-
-                    <input
-                        type="number"
-                        name="current_value"
-                        step="0.01"
-                        min="0"
-                        required
-                    >
-
+                    <label>Current Value</label>
+                    <input type="number" name="current_value" step="0.01" min="0" required>
                 </div>
-
-
             </div>
 
-
-            <!-- Date + Description -->
-
             <div class="form-row">
-
-
                 <div class="form-group">
-
-                    <label>
-                        Purchase Date
-                    </label>
-
-                    <input
-                        type="date"
-                        name="purchase_date"
-                        required
-                    >
-
+                    <label>Purchase Date</label>
+                    <input type="date" name="purchase_date" required>
                 </div>
-
 
                 <div class="form-group form-group-wide">
-
-                    <label>
-                        Description
-                    </label>
-
-                    <input
-                        type="text"
-                        name="description"
-                        placeholder="Optional notes"
-                    >
-
+                    <label>Description</label>
+                    <input type="text" name="description" placeholder="Optional notes">
                 </div>
-
-
             </div>
 
-
-            <button
-                type="submit"
-                class="btn-primary"
-            >
-                Add Investment
+            <button type="submit" class="btn-primary" style="background: #8b5cf6; border-color: #8b5cf6;">
+                {{ icons.icon("check", size=16) }} Add Investment
             </button>
-
-
         </form>
-
-
     </div>
-
 
 </div>
 
-
-<!-- =========================================
-     CHART.JS
-========================================== -->
-
+<!-- CHART.JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
 <script>
+    const assetLabels = {{ (asset_types | default([])) | tojson }};
+    const assetValues = {{ (asset_values | default([])) | tojson }};
+    const allocationCanvas = document.getElementById("assetAllocationChart");
 
-    /* ========================================
-       Asset Allocation
-    ======================================== */
-
-    const assetLabels =
-        {{ (asset_types | default([])) | tojson }};
-
-    const assetValues =
-        {{ (asset_values | default([])) | tojson }};
-
-
-    const allocationCanvas =
-        document.getElementById(
-            "assetAllocationChart"
-        );
-
-
-    if (
-        allocationCanvas &&
-        assetLabels.length > 0
-    ) {
-
-        new Chart(
-            allocationCanvas,
-            {
-
-                type: "doughnut",
-
-                data: {
-
-                    labels: assetLabels,
-
-                    datasets: [
-
-                        {
-
-                            data: assetValues
-
-                        }
-
+    if (allocationCanvas && assetLabels.length > 0) {
+        new Chart(allocationCanvas, {
+            type: "doughnut",
+            data: {
+                labels: assetLabels,
+                datasets: [{
+                    data: assetValues,
+                    backgroundColor: [
+                        "#8B5CF6",
+                        "#2563EB",
+                        "#10B981",
+                        "#F59E0B",
+                        "#06B6D4",
+                        "#EC4899"
                     ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    plugins: {
-
-                        legend: {
-
-                            position: "bottom"
-
-                        }
-
-                    }
-
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "bottom" }
                 }
-
             }
-        );
-
+        });
     }
 
-
-    /* ========================================
-       Portfolio Performance
-    ======================================== */
-
-    const performanceCanvas =
-        document.getElementById(
-            "performanceChart"
-        );
-
-
+    const performanceCanvas = document.getElementById("performanceChart");
     if (performanceCanvas) {
-
-        new Chart(
-            performanceCanvas,
-            {
-
-                type: "bar",
-
-                data: {
-
-                    labels: [
-                        "Invested",
-                        "Current Value"
+        new Chart(performanceCanvas, {
+            type: "bar",
+            data: {
+                labels: ["Invested", "Current Value"],
+                datasets: [{
+                    label: "Portfolio Value",
+                    data: [
+                        {{ total_invested | default(0) }},
+                        {{ total_investment_value | default(0) }}
                     ],
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "Portfolio Value",
-
-                            data: [
-
-                                {{ total_invested | default(0) }},
-
-                                {{ total_investment_value | default(0) }}
-
-                            ]
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false
-
+                    backgroundColor: ["#6366F1", "#8B5CF6"],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
                 }
-
             }
-        );
-
+        });
     }
-
 </script>
-
 
 {% endblock %}

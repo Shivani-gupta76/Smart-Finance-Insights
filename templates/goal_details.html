@@ -1,26 +1,15 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block css %}
-
-<link
-    rel="stylesheet"
-    href="{{ url_for(
-        'static',
-        filename='css/goal_details.css'
-    ) }}"
->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/goal_details.css') }}">
 
 <style>
-
-    /* =====================================================
-       INLINE EDIT PART
-    ====================================================== */
-
     .inline-edit-part {
         margin-top: 22px;
         padding: 24px;
-        background: #f8fafc;
-        border: 1px solid #dbe3ef;
+        background: var(--bg-primary);
+        border: 1px solid var(--card-border);
         border-radius: 12px;
     }
 
@@ -28,12 +17,12 @@
         margin: 0 0 6px;
         font-size: 20px;
         font-weight: 700;
-        color: #1f2937;
+        color: var(--text-primary);
     }
 
     .inline-edit-subtitle {
         margin: 0 0 22px;
-        color: #6b7280;
+        color: var(--text-muted);
         font-size: 14px;
     }
 
@@ -53,7 +42,7 @@
         margin-bottom: 7px;
         font-size: 14px;
         font-weight: 600;
-        color: #374151;
+        color: var(--text-primary);
     }
 
     .edit-form-group input,
@@ -61,18 +50,18 @@
         width: 100%;
         box-sizing: border-box;
         padding: 11px 13px;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--input-border);
         border-radius: 8px;
-        background: #ffffff;
+        background: var(--input-bg);
         font-size: 14px;
         font-family: inherit;
-        color: #1f2937;
+        color: var(--input-text);
     }
 
     .edit-form-group input:focus,
     .edit-full-width textarea:focus {
         outline: none;
-        border-color: #2563eb;
+        border-color: var(--primary-color);
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
     }
 
@@ -98,7 +87,7 @@
         border: none;
         border-radius: 8px;
         padding: 10px 18px;
-        background: #2563eb;
+        background: var(--primary-color);
         color: white;
         font-size: 14px;
         font-weight: 600;
@@ -106,7 +95,7 @@
     }
 
     .save-edit-btn:hover {
-        background: #1d4ed8;
+        background: var(--primary-hover);
     }
 
     .cancel-edit-btn {
@@ -115,15 +104,16 @@
         justify-content: center;
         padding: 10px 18px;
         border-radius: 8px;
-        background: #e5e7eb;
-        color: #374151;
+        background: var(--bg-primary);
+        color: var(--text-primary);
         text-decoration: none;
         font-size: 14px;
         font-weight: 600;
+        border: 1px solid var(--card-border);
     }
 
     .cancel-edit-btn:hover {
-        background: #d1d5db;
+        background: var(--card-border);
     }
 
     .small-edit-btn {
@@ -132,15 +122,20 @@
         justify-content: center;
         padding: 8px 14px;
         border-radius: 7px;
-        background: #eff6ff;
-        color: #2563eb;
+        background: #2563EB;
+        color: #ffffff !important;
         text-decoration: none;
         font-size: 13px;
         font-weight: 600;
+        border: 1px solid #2563EB;
+        transition: all 0.2s ease;
     }
 
     .small-edit-btn:hover {
-        background: #dbeafe;
+        background: #1D4ED8;
+        border-color: #1D4ED8;
+        color: #ffffff !important;
+        transform: translateY(-1px);
     }
 
     .part-actions {
@@ -156,36 +151,34 @@
     }
 
     .small-delete-btn {
-        border: 1px solid #fecaca;
-        background: #fff1f2;
-        color: #dc2626;
+        border: 1px solid #EF4444;
+        background: #EF4444;
+        color: #ffffff !important;
         border-radius: 7px;
         padding: 8px 14px;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
+        transition: all 0.2s ease;
     }
 
     .small-delete-btn:hover {
-        background: #fee2e2;
+        background: #DC2626;
+        border-color: #DC2626;
+        color: #ffffff !important;
+        transform: translateY(-1px);
     }
 
     .part-actions select {
         padding: 8px 12px;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--input-border);
         border-radius: 7px;
-        background: #ffffff;
-        color: #374151;
+        background: var(--input-bg);
+        color: var(--input-text);
         font-size: 13px;
     }
 
-
-    /* =====================================================
-       RESPONSIVE EDIT FORM
-    ====================================================== */
-
     @media (max-width: 768px) {
-
         .edit-form-grid {
             grid-template-columns: 1fr;
         }
@@ -200,255 +193,139 @@
             width: 100%;
             box-sizing: border-box;
         }
-
     }
-
 </style>
-
 {% endblock %}
-
 
 {% block title %}
-Goal Details
+Goal Details | FinSight — Financial Intelligence
 {% endblock %}
-
 
 {% block content %}
 
 <div class="goal-details-page">
 
-
-    <!-- =====================================================
-         PAGE HEADER
-    ====================================================== -->
-
+    <!-- PAGE HEADER -->
     <div class="goal-details-header">
-
         <div>
-
             <div class="goal-details-title-row">
-
                 <span class="goal-details-icon">
-                    🎯
+                    {{ icons.icon("target", size=24) }}
                 </span>
-
                 <div>
-
-                    <h1>
-                        {{ goal.goal_name }}
-                    </h1>
-
+                    <h1>{{ goal.goal_name }}</h1>
                     <p class="goal-subtitle">
-
-                        {{ goal.category }}
-
-                        ·
-
-                        {{ goal.priority }} Priority
-
+                        {{ goal.category }} · {{ goal.priority }} Priority
                     </p>
-
                 </div>
-
             </div>
-
         </div>
 
-
-        <a
-            href="{{ url_for('goal.goals') }}"
-            class="back-goals-btn"
-        >
-            ← Back to Goals
+        <a href="{{ url_for('goal.goals') }}" class="back-goals-btn">
+            &larr; Back to Goals
         </a>
-
     </div>
 
-
-
-    <!-- =====================================================
-         GOAL OVERVIEW
-    ====================================================== -->
-
+    <!-- GOAL OVERVIEW -->
     <div class="details-card">
-
         <div class="details-card-header">
-
             <div>
-
-                <h2>
-                    Goal Overview
-                </h2>
-
-                <p>
-                    Track the financial details of this goal.
-                </p>
-
+                <h2>Goal Overview</h2>
+                <p>Track the financial details of this goal.</p>
             </div>
-
 
             {% if goal.status == "Completed" %}
-
                 <span class="status-badge completed">
-                    ✓ Completed
+                    {{ icons.icon("check", size=14) }} Completed
                 </span>
-
             {% else %}
-
                 <span class="status-badge active">
-                    ● In Progress
+                    {{ icons.icon("clock", size=14) }} In Progress
                 </span>
-
             {% endif %}
-
         </div>
 
-
         <div class="overview-grid">
-
-
             <!-- Target -->
-
             <div class="overview-item">
-
-                <span class="overview-label">
-                    Target Amount
-                </span>
-
+                <span class="overview-label">Target Amount</span>
                 <strong>
-
-                    ₹{{ "{:,.2f}".format(
-                        goal.target_amount|default(0, true)
-                    ) }}
-
+                    ₹{{ "{:,.2f}".format(goal.target_amount|default(0, true)) }}
                 </strong>
-
             </div>
-
 
             <!-- Current -->
-
             <div class="overview-item">
-
-                <span class="overview-label">
-                    Current Amount
-                </span>
-
+                <span class="overview-label">Current Amount</span>
                 <strong>
-
-                    ₹{{ "{:,.2f}".format(
-                        goal.current_amount|default(0, true)
-                    ) }}
-
+                    ₹{{ "{:,.2f}".format(goal.current_amount|default(0, true)) }}
                 </strong>
-
             </div>
-
 
             <!-- Remaining -->
-
             <div class="overview-item">
-
-                <span class="overview-label">
-                    Remaining
-                </span>
-
+                <span class="overview-label">Remaining</span>
                 <strong>
-
                     ₹{{ "{:,.2f}".format(
-
-                        (
-
-                            goal.target_amount|default(0, true)
-
-                            -
-
-                            goal.current_amount|default(0, true)
-
-                        )
-
-                        if
-
-                        (
-
-                            goal.target_amount|default(0, true)
-
-                            -
-
-                            goal.current_amount|default(0, true)
-
-                        ) > 0
-
+                        (goal.target_amount|default(0, true) - goal.current_amount|default(0, true))
+                        if (goal.target_amount|default(0, true) - goal.current_amount|default(0, true)) > 0
                         else 0
-
                     ) }}
-
                 </strong>
-
             </div>
-
 
             <!-- Target Date -->
-
             <div class="overview-item">
-
-                <span class="overview-label">
-                    Target Date
-                </span>
-
+                <span class="overview-label">Target Date</span>
                 <strong>
-
                     {% if goal.target_date %}
-
                         {{ goal.target_date.strftime("%d %b %Y") }}
-
                     {% else %}
-
                         Not Set
-
                     {% endif %}
-
                 </strong>
-
             </div>
-
         </div>
 
         {% if linked_budget or (goal.budgets and goal.budgets|length > 0) %}
             {% set b_item = linked_budget if linked_budget else goal.budgets[0] %}
-            <div style="margin-top: 20px; padding: 20px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 12px; color: #1E40AF;">
+            <div style="margin-top: 20px; padding: 20px; background: var(--primary-light); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 12px; color: var(--text-primary);">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                     <div>
-                        <h3 style="margin: 0; font-size: 16px; color: #1E3A8A;"><i class="fa-solid fa-link"></i> Linked Budget Planning Context</h3>
-                        <span style="font-size: 13px; color: #3B82F6;">Budget Period: {{ b_item.month }} {{ b_item.year }}</span>
+                        <h3 style="margin: 0; font-size: 16px; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
+                            {{ icons.icon("calculator", size=18) }} Linked Budget Planning Context
+                        </h3>
+                        <span style="font-size: 13px; color: var(--text-muted);">Budget Period: {{ b_item.month }} {{ b_item.year }}</span>
                     </div>
-                    <a href="{{ url_for('budget.budgets') }}" style="color: #2563EB; font-weight: 600; text-decoration: none; font-size: 13px; background: #ffffff; padding: 6px 14px; border-radius: 6px; border: 1px solid #BFDBFE;">Manage Budget &rarr;</a>
+                    <a href="{{ url_for('budget.budgets') }}" style="color: var(--primary-color); font-weight: 600; text-decoration: none; font-size: 13px; background: var(--card-bg); padding: 6px 14px; border-radius: 6px; border: 1px solid var(--card-border);">Manage Budget &rarr;</a>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px;">
-                    <div style="background: #ffffff; padding: 12px; border-radius: 8px;">
-                        <span style="font-size: 12px; color: #64748B; display: block;">Budget Limit</span>
-                        <strong style="font-size: 16px; color: #0F172A;">₹{{ "{:,.0f}".format(b_item.monthly_budget) }}</strong>
+                    <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--card-border);">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block;">Budget Limit</span>
+                        <strong style="font-size: 16px; color: var(--text-primary);">₹{{ "{:,.0f}".format(b_item.monthly_budget) }}</strong>
                     </div>
-                    <div style="background: #ffffff; padding: 12px; border-radius: 8px;">
-                        <span style="font-size: 12px; color: #64748B; display: block;">Actual Budget Spending</span>
-                        <strong style="font-size: 16px; color: #0F172A;">₹{{ "{:,.0f}".format(budget_actual_spent) }}</strong>
+                    <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--card-border);">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block;">Actual Budget Spending</span>
+                        <strong style="font-size: 16px; color: var(--text-primary);">₹{{ "{:,.0f}".format(budget_actual_spent) }}</strong>
                     </div>
-                    <div style="background: #ffffff; padding: 12px; border-radius: 8px;">
-                        <span style="font-size: 12px; color: #64748B; display: block;">Remaining Budget</span>
-                        <strong style="font-size: 16px; color: #16A34A;">₹{{ "{:,.0f}".format(budget_remaining) }}</strong>
+                    <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--card-border);">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block;">Remaining Budget</span>
+                        <strong style="font-size: 16px; color: var(--success-color);">₹{{ "{:,.0f}".format(budget_remaining) }}</strong>
                     </div>
-                    <div style="background: #ffffff; padding: 12px; border-radius: 8px;">
-                        <span style="font-size: 12px; color: #64748B; display: block;">Usage Percentage</span>
-                        <strong style="font-size: 16px; color: #2563EB;">{{ budget_usage_pct }}%</strong>
+                    <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--card-border);">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block;">Usage Percentage</span>
+                        <strong style="font-size: 16px; color: var(--primary-color);">{{ budget_usage_pct }}%</strong>
                     </div>
                 </div>
 
                 {% if related_expenses %}
-                <div style="background: #ffffff; padding: 14px; border-radius: 8px;">
-                    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #0F172A;"><i class="fa-solid fa-receipt"></i> Related Expense Activity</h4>
+                <div style="background: var(--card-bg); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border);">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                        {{ icons.icon("receipt", size=16) }} Related Expense Activity
+                    </h4>
                     <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
                         <thead>
-                            <tr style="text-align: left; color: #64748B; border-bottom: 1px solid #E2E8F0;">
+                            <tr style="text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--table-border);">
                                 <th style="padding: 6px;">Title</th>
                                 <th style="padding: 6px;">Category</th>
                                 <th style="padding: 6px;">Amount</th>
@@ -457,11 +334,11 @@ Goal Details
                         </thead>
                         <tbody>
                             {% for exp in related_expenses %}
-                            <tr style="border-bottom: 1px solid #F1F5F9;">
-                                <td style="padding: 6px; color: #0F172A;">{{ exp.title }}</td>
-                                <td style="padding: 6px; color: #475569;">{{ exp.category }}</td>
-                                <td style="padding: 6px; color: #DC2626; font-weight: 600;">₹{{ "{:,.0f}".format(exp.amount) }}</td>
-                                <td style="padding: 6px; color: #64748B;">{{ exp.expense_date.strftime('%d %b %Y') if exp.expense_date else '' }}</td>
+                            <tr style="border-bottom: 1px solid var(--table-border);">
+                                <td style="padding: 6px; color: var(--text-primary);">{{ exp.title }}</td>
+                                <td style="padding: 6px; color: var(--text-secondary);">{{ exp.category }}</td>
+                                <td style="padding: 6px; color: var(--danger-color); font-weight: 600;">₹{{ "{:,.0f}".format(exp.amount) }}</td>
+                                <td style="padding: 6px; color: var(--text-muted);">{{ exp.expense_date.strftime('%d %b %Y') if exp.expense_date else '' }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -472,14 +349,16 @@ Goal Details
         {% endif %}
 
         <!-- Direct Goal-Linked Expenses Section -->
-        <div style="margin-top: 24px; padding: 20px; background: #ffffff; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="margin-top: 24px; padding: 20px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: var(--card-shadow);">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                <h3 style="margin: 0; font-size: 18px; color: #0F172A;"><i class="fa-solid fa-receipt"></i> Direct Goal-Linked Expenses</h3>
+                <h3 style="margin: 0; font-size: 18px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    {{ icons.icon("receipt", size=20) }} Direct Goal-Linked Expenses
+                </h3>
                 <div style="display: flex; gap: 12px; font-size: 13px;">
-                    <span style="background: #EFF6FF; color: #2563EB; padding: 4px 12px; border-radius: 20px; font-weight: 600;">
+                    <span style="background: var(--primary-light); color: var(--primary-color); padding: 4px 12px; border-radius: 20px; font-weight: 600;">
                         Total Linked: ₹{{ "{:,.0f}".format(total_goal_linked_expenses) }}
                     </span>
-                    <span style="background: #F1F5F9; color: #475569; padding: 4px 12px; border-radius: 20px; font-weight: 600;">
+                    <span style="background: var(--bg-primary); color: var(--text-secondary); padding: 4px 12px; border-radius: 20px; font-weight: 600; border: 1px solid var(--card-border);">
                         Expenses Count: {{ count_goal_linked_expenses }}
                     </span>
                 </div>
@@ -488,7 +367,7 @@ Goal Details
             {% if goal_linked_expenses %}
             <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                 <thead>
-                    <tr style="text-align: left; background: #F8FAFC; color: #64748B; border-bottom: 2px solid #E2E8F0;">
+                    <tr style="text-align: left; background: var(--table-header-bg); color: var(--text-muted); border-bottom: 2px solid var(--table-border);">
                         <th style="padding: 10px;">Expense Title</th>
                         <th style="padding: 10px;">Category</th>
                         <th style="padding: 10px;">Amount</th>
@@ -497,1216 +376,361 @@ Goal Details
                 </thead>
                 <tbody>
                     {% for exp in goal_linked_expenses %}
-                    <tr style="border-bottom: 1px solid #F1F5F9;">
-                        <td style="padding: 10px; color: #0F172A; font-weight: 600;">{{ exp.title }}</td>
-                        <td style="padding: 10px; color: #475569;">{{ exp.category }}</td>
-                        <td style="padding: 10px; color: #DC2626; font-weight: 700;">₹{{ "{:,.0f}".format(exp.amount) }}</td>
-                        <td style="padding: 10px; color: #64748B;">{{ exp.expense_date.strftime('%d %b %Y') if exp.expense_date else '' }}</td>
+                    <tr style="border-bottom: 1px solid var(--table-border);">
+                        <td style="padding: 10px; color: var(--text-primary); font-weight: 600;">{{ exp.title }}</td>
+                        <td style="padding: 10px; color: var(--text-secondary);">{{ exp.category }}</td>
+                        <td style="padding: 10px; color: var(--danger-color); font-weight: 700;">₹{{ "{:,.0f}".format(exp.amount) }}</td>
+                        <td style="padding: 10px; color: var(--text-muted);">{{ exp.expense_date.strftime('%d %b %Y') if exp.expense_date else '' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
             {% else %}
-            <div style="text-align: center; padding: 30px; color: #64748B; background: #F8FAFC; border-radius: 8px; border: 1px dashed #CBD5E1;">
-                <i class="fa-solid fa-receipt" style="font-size: 24px; color: #94A3B8; margin-bottom: 8px; display: block;"></i>
-                <p style="margin: 0;">No direct expenses linked to this goal yet. You can link an expense to this goal from the Expenses page.</p>
+            <div style="text-align: center; padding: 30px; color: var(--text-muted); background: var(--bg-primary); border-radius: 8px; border: 1px dashed var(--card-border);">
+                {{ icons.icon("inbox", size=28) }}
+                <p style="margin: 8px 0 0 0;">No direct expenses linked to this goal yet. You can link an expense to this goal from the Expenses page.</p>
             </div>
             {% endif %}
         </div>
-
     </div>
 
-
-
-
-    <!-- =====================================================
-         OVERALL PROGRESS
-    ====================================================== -->
-
+    <!-- OVERALL PROGRESS -->
     <div class="details-card">
-
         <div class="details-card-header">
-
             <div>
-
-                <h2>
-                    Overall Progress
-                </h2>
-
-                <p>
-                    Your progress toward completing this goal.
-                </p>
-
+                <h2>Overall Progress</h2>
+                <p>Your progress toward completing this goal.</p>
             </div>
 
-
-            {% set target_amount =
-                goal.target_amount|default(0, true)
-            %}
-
-            {% set current_amount =
-                goal.current_amount|default(0, true)
-            %}
-
+            {% set target_amount = goal.target_amount|default(0, true) %}
+            {% set current_amount = goal.current_amount|default(0, true) %}
 
             {% if target_amount > 0 %}
-
-                {% set calculated_progress =
-                    ((current_amount / target_amount) * 100)
-                %}
-
+                {% set calculated_progress = ((current_amount / target_amount) * 100) %}
             {% else %}
-
                 {% set calculated_progress = 0 %}
-
             {% endif %}
-
 
             {% if calculated_progress > 100 %}
-
                 {% set calculated_progress = 100 %}
-
             {% endif %}
-
 
             <strong class="large-progress-number">
-
-                {{ "%.2f"|format(
-                    calculated_progress
-                ) }}%
-
+                {{ "%.2f"|format(calculated_progress) }}%
             </strong>
-
         </div>
-
-
-        <!-- Progress Bar -->
 
         <div class="details-progress-bar">
-
-            <div
-                class="details-progress-fill"
-                style="width: {{ calculated_progress }}%;"
-            ></div>
-
+            <div class="details-progress-fill" style="width: {{ calculated_progress }}%;"></div>
         </div>
-
 
         <div class="progress-summary">
-
             <span>
-
-                ₹{{ "{:,.0f}".format(
-                    current_amount
-                ) }}
-
-                /
-
-                ₹{{ "{:,.0f}".format(
-                    target_amount
-                ) }}
-
+                ₹{{ "{:,.0f}".format(current_amount) }} / ₹{{ "{:,.0f}".format(target_amount) }}
             </span>
 
-
             <span>
-
                 ₹{{ "{:,.0f}".format(
-
-                    (
-
-                        target_amount
-                        -
-                        current_amount
-
-                    )
-
-                    if
-
-                    (
-
-                        target_amount
-                        -
-                        current_amount
-
-                    ) > 0
-
+                    (target_amount - current_amount)
+                    if (target_amount - current_amount) > 0
                     else 0
-
-                ) }}
-
-                remaining
-
+                ) }} remaining
             </span>
-
         </div>
 
-
-        <!-- =================================================
-     STATISTICS
-================================================== -->
-
-{% set goal_parts =
-    parts|default([], true)
-%}
-
-{% set total_parts =
-    goal_parts|length
-%}
-
-{% set completed_parts =
-    goal_parts
-    |selectattr("status", "equalto", "Completed")
-    |list
-    |length
-%}
-
-{% set in_progress_parts =
-    goal_parts
-    |selectattr("status", "equalto", "In Progress")
-    |list
-    |length
-%}
-
-{% set pending_parts =
-    goal_parts
-    |selectattr("status", "equalto", "Pending")
-    |list
-    |length
-%}
-
-
-<div class="goal-stat-grid">
-
-
-    <!-- ==============================
-         TOTAL PARTS
-    =============================== -->
-
-    <div class="goal-stat-card">
-
-        <span>
-            📋
-        </span>
-
-        <strong>
-            {{ total_parts }}
-        </strong>
-
-        <small>
-            Total Parts
-        </small>
-
-    </div>
-
-
-    <!-- ==============================
-         COMPLETED
-    =============================== -->
-
-    <div class="goal-stat-card completed-stat">
-
-        <span>
-            ✓
-        </span>
-
-        <strong>
-            {{ completed_parts }}
-        </strong>
-
-        <small>
-            Completed
-        </small>
-
-    </div>
-
-
-    <!-- ==============================
-         IN PROGRESS
-    =============================== -->
-
-    <div class="goal-stat-card progress-stat">
-
-        <span>
-            ↗
-        </span>
-
-        <strong>
-            {{ in_progress_parts }}
-        </strong>
-
-        <small>
-            In Progress
-        </small>
-
-    </div>
-
-
-    <!-- ==============================
-         PENDING
-    =============================== -->
-
-    <div class="goal-stat-card pending-stat">
-
-        <span>
-            ○
-        </span>
-
-        <strong>
-            {{ pending_parts }}
-        </strong>
-
-        <small>
-            Pending
-        </small>
-
-    </div>
-
-
-    <!-- ==============================
-         ESTIMATED COST
-    =============================== -->
-
-    <div class="goal-stat-card cost-stat">
-
-        <span>
-            💰
-        </span>
-
-        <strong>
-            ₹{{ "{:,.2f}".format(
-                estimated_total|default(0, true)
-            ) }}
-        </strong>
-
-        <small>
-            Estimated Cost
-        </small>
-
-    </div>
-
-
-    <!-- ==============================
-         ACTUAL COST
-    =============================== -->
-
-    <div class="goal-stat-card cost-stat">
-
-        <span>
-            💵
-        </span>
-
-        <strong>
-            ₹{{ "{:,.2f}".format(
-                actual_total|default(0, true)
-            ) }}
-        </strong>
-
-        <small>
-            Actual Cost
-        </small>
-
-    </div>
-
-
-    <!-- ==============================
-         COST VARIANCE
-    =============================== -->
-
-    <div class="goal-stat-card variance-stat">
-
-        <span>
-            📊
-        </span>
-
-        <strong
-            class="
-            {% if (cost_variance|default(0, true)) < 0 %}
-                variance-negative
-            {% else %}
-                variance-positive
-            {% endif %}
-            "
-        >
-            ₹{{ "{:,.2f}".format(
-                cost_variance|default(0, true)
-            ) }}
-        </strong>
-
-        <small>
-            Cost Variance
-        </small>
-
-    </div>
-
-
-</div>
-
-
-    <!-- =====================================================
-         GOAL PARTS
-    ====================================================== -->
-
-    <div class="details-card">
-
-        <div class="details-card-header">
-
-            <div>
-
-                <h2>
-                    Goal Parts (Steps)
-                </h2>
-
-                <p>
-                    Break your financial goal into smaller
-                    actionable steps.
-                </p>
-
+        <!-- STATISTICS -->
+        {% set goal_parts = parts|default([], true) %}
+        {% set total_parts = goal_parts|length %}
+        {% set completed_parts = goal_parts|selectattr("status", "equalto", "Completed")|list|length %}
+        {% set in_progress_parts = goal_parts|selectattr("status", "equalto", "In Progress")|list|length %}
+        {% set pending_parts = goal_parts|selectattr("status", "equalto", "Pending")|list|length %}
+
+        <div class="goal-stat-grid">
+            <div class="goal-stat-card">
+                <span>{{ icons.icon("file-text", size=18) }}</span>
+                <strong>{{ total_parts }}</strong>
+                <small>Total Parts</small>
             </div>
 
+            <div class="goal-stat-card completed-stat">
+                <span>{{ icons.icon("check", size=18) }}</span>
+                <strong>{{ completed_parts }}</strong>
+                <small>Completed</small>
+            </div>
 
-            <button
-                type="button"
-                class="add-part-btn"
-                onclick="togglePartForm()"
-            >
+            <div class="goal-stat-card progress-stat">
+                <span>{{ icons.icon("trend-up", size=18) }}</span>
+                <strong>{{ in_progress_parts }}</strong>
+                <small>In Progress</small>
+            </div>
+
+            <div class="goal-stat-card pending-stat">
+                <span>{{ icons.icon("clock", size=18) }}</span>
+                <strong>{{ pending_parts }}</strong>
+                <small>Pending</small>
+            </div>
+
+            <div class="goal-stat-card cost-stat">
+                <span>{{ icons.icon("money", size=18) }}</span>
+                <strong>₹{{ "{:,.2f}".format(estimated_total|default(0, true)) }}</strong>
+                <small>Estimated Cost</small>
+            </div>
+
+            <div class="goal-stat-card cost-stat">
+                <span>{{ icons.icon("wallet", size=18) }}</span>
+                <strong>₹{{ "{:,.2f}".format(actual_total|default(0, true)) }}</strong>
+                <small>Actual Cost</small>
+            </div>
+
+            <div class="goal-stat-card variance-stat">
+                <span>{{ icons.icon("analytics", size=18) }}</span>
+                <strong class="{% if (cost_variance|default(0, true)) < 0 %}variance-negative{% else %}variance-positive{% endif %}">
+                    ₹{{ "{:,.2f}".format(cost_variance|default(0, true)) }}
+                </strong>
+                <small>Cost Variance</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- GOAL PARTS -->
+    <div class="details-card">
+        <div class="details-card-header">
+            <div>
+                <h2>Goal Parts (Steps)</h2>
+                <p>Break your financial goal into smaller actionable steps.</p>
+            </div>
+
+            <button type="button" class="add-part-btn" onclick="togglePartForm()">
                 + Add New Part
             </button>
-
         </div>
 
-
-
-        <!-- =================================================
-             ADD PART FORM
-        ================================================== -->
-
-        <div
-            id="partForm"
-            class="part-form"
-            style="display:none;"
-        >
-
+        <!-- ADD PART FORM -->
+        <div id="partForm" class="part-form" style="display:none;">
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <div class="part-form-grid">
-
-
-                    <!-- Part Name -->
-
                     <div class="form-group">
-
-                        <label>
-                            Part Name
-                        </label>
-
-                        <input
-                            type="text"
-                            name="part_name"
-                            placeholder="Example: Save ₹5,00,000"
-                            required
-                        >
-
+                        <label>Part Name</label>
+                        <input type="text" name="part_name" placeholder="Example: Save ₹50,000" required>
                     </div>
 
-
-                    <!-- Step Order -->
-
                     <div class="form-group">
-
-                        <label>
-                            Step Order
-                        </label>
-
-                        <input
-                            type="number"
-                            name="step_order"
-                            value="1"
-                            min="1"
-                            required
-                        >
-
+                        <label>Step Order</label>
+                        <input type="number" name="step_order" value="1" min="1" required>
                     </div>
 
-
-                    <!-- Estimated Cost -->
-
                     <div class="form-group">
-
-                        <label>
-                            Estimated Cost
-                        </label>
-
-                        <input
-                            type="number"
-                            name="estimated_cost"
-                            value="0"
-                            min="0"
-                            step="0.01"
-                        >
-
+                        <label>Estimated Cost</label>
+                        <input type="number" name="estimated_cost" value="0" min="0" step="0.01">
                     </div>
 
-
-                    <!-- Actual Cost -->
-
                     <div class="form-group">
-
-                        <label>
-                            Actual Cost
-                        </label>
-
-                        <input
-                            type="number"
-                            name="actual_cost"
-                            value="0"
-                            min="0"
-                            step="0.01"
-                        >
-
+                        <label>Actual Cost</label>
+                        <input type="number" name="actual_cost" value="0" min="0" step="0.01">
                     </div>
 
-
-                    <!-- Start Date -->
-
                     <div class="form-group">
-
-                        <label>
-                            Start Date
-                        </label>
-
-                        <input
-                            type="date"
-                            name="start_date"
-                        >
-
+                        <label>Start Date</label>
+                        <input type="date" name="start_date">
                     </div>
 
-
-                    <!-- Completion Date -->
-
                     <div class="form-group">
-
-                        <label>
-                            Completion Date
-                        </label>
-
-                        <input
-                            type="date"
-                            name="completion_date"
-                        >
-
+                        <label>Completion Date</label>
+                        <input type="date" name="completion_date">
                     </div>
-
-
-                    <!-- Description -->
 
                     <div class="form-group full-width">
-
-                        <label>
-                            Description
-                        </label>
-
-                        <textarea
-                            name="description"
-                            rows="3"
-                            placeholder="Describe this step"
-                        ></textarea>
-
+                        <label>Description</label>
+                        <textarea name="description" rows="3" placeholder="Describe this step"></textarea>
                     </div>
-
-
-                    <!-- Notes -->
 
                     <div class="form-group full-width">
-
-                        <label>
-                            Notes
-                        </label>
-
-                        <textarea
-                            name="notes"
-                            rows="3"
-                            placeholder="Additional notes"
-                        ></textarea>
-
+                        <label>Notes</label>
+                        <textarea name="notes" rows="3" placeholder="Additional notes"></textarea>
                     </div>
-
                 </div>
-
 
                 <div class="part-form-actions">
-
-                    <button
-                        type="submit"
-                        class="save-part-btn"
-                    >
-                        Add Part
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="cancel-part-btn"
-                        onclick="togglePartForm()"
-                    >
-                        Cancel
-                    </button>
-
+                    <button type="submit" class="save-part-btn">Add Part</button>
+                    <button type="button" class="cancel-part-btn" onclick="togglePartForm()">Cancel</button>
                 </div>
-
             </form>
-
         </div>
 
-
-
-        <!-- =================================================
-             PART LIST
-        ================================================== -->
-
+        <!-- PART LIST -->
         {% if goal_parts %}
-
             <div class="parts-list">
-
                 {% for part in goal_parts %}
-
-
                     <div class="part-card">
-
-                        <div class="part-number">
-
-                            {{ loop.index }}
-
-                        </div>
-
+                        <div class="part-number">{{ loop.index }}</div>
 
                         <div class="part-content">
-
-
-                            <!-- =================================
-                                 NORMAL PART HEADER
-                            ================================== -->
-
                             <div class="part-top">
-
                                 <div>
-
-                                    <h3>
-                                        {{ part.part_name }}
-                                    </h3>
-
-                                    <p>
-                                        {{ part.description or
-                                           "No description provided." }}
-                                    </p>
-
+                                    <h3>{{ part.part_name }}</h3>
+                                    <p>{{ part.description or "No description provided." }}</p>
                                 </div>
-
-
-                                <span class="part-status">
-
-                                    {{ part.status }}
-
-                                </span>
-
+                                <span class="part-status">{{ part.status }}</span>
                             </div>
-
-
-
-                            <!-- =================================
-                                 PART META
-                            ================================== -->
 
                             <div class="part-meta">
-
-                                <span>
-
-                                    Estimated:
-
-                                    ₹{{ "{:,.0f}".format(
-                                        part.estimated_cost|default(
-                                            0,
-                                            true
-                                        )
-                                    ) }}
-
-                                </span>
-
-
-                                <span>
-
-                                    Actual:
-
-                                    ₹{{ "{:,.0f}".format(
-                                        part.actual_cost|default(
-                                            0,
-                                            true
-                                        )
-                                    ) }}
-
-                                </span>
-
-
+                                <span>Estimated: ₹{{ "{:,.0f}".format(part.estimated_cost|default(0, true)) }}</span>
+                                <span>Actual: ₹{{ "{:,.0f}".format(part.actual_cost|default(0, true)) }}</span>
                                 {% if part.start_date %}
-
-                                    <span>
-
-                                        Start:
-
-                                        {{ part.start_date.strftime(
-                                            "%d %b %Y"
-                                        ) }}
-
-                                    </span>
-
+                                    <span>Start: {{ part.start_date.strftime("%d %b %Y") }}</span>
                                 {% endif %}
-
-
                                 {% if part.completion_date %}
-
-                                    <span>
-
-                                        Complete:
-
-                                        {{ part.completion_date.strftime(
-                                            "%d %b %Y"
-                                        ) }}
-
-                                    </span>
-
+                                    <span>Complete: {{ part.completion_date.strftime("%d %b %Y") }}</span>
                                 {% endif %}
-
                             </div>
 
-
-
-                            <!-- =================================
-                                 NOTES
-                            ================================== -->
-
                             {% if part.notes %}
-
                                 <div class="part-notes">
-
-                                    <strong>
-                                        Notes:
-                                    </strong>
-
-                                    {{ part.notes }}
-
+                                    <strong>Notes:</strong> {{ part.notes }}
                                 </div>
-
                             {% endif %}
 
-
-
-                            <!-- =================================
-                                 PART ACTIONS
-                            ================================== -->
-
                             <div class="part-actions">
-
-
-                                <!-- STATUS -->
-
-                                <form
-                                    method="POST"
-                                    action="{{ url_for(
-                                        'goal.update_goal_part_status',
-                                        id=part.id
-                                    ) }}"
-                                >
+                                <form method="POST" action="{{ url_for('goal.update_goal_part_status', id=part.id) }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                                    <select
-                                        name="status"
-                                        onchange="this.form.submit()"
-                                    >
-
-                                        <option
-                                            value="Pending"
-                                            {% if part.status == "Pending" %}
-                                                selected
-                                            {% endif %}
-                                        >
-                                            Pending
-                                        </option>
-
-
-                                        <option
-                                            value="In Progress"
-                                            {% if part.status == "In Progress" %}
-                                                selected
-                                            {% endif %}
-                                        >
-                                            In Progress
-                                        </option>
-
-
-                                        <option
-                                            value="Completed"
-                                            {% if part.status == "Completed" %}
-                                                selected
-                                            {% endif %}
-                                        >
-                                            Completed
-                                        </option>
-
+                                    <select name="status" onchange="this.form.submit()">
+                                        <option value="Pending" {% if part.status == "Pending" %}selected{% endif %}>Pending</option>
+                                        <option value="In Progress" {% if part.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                                        <option value="Completed" {% if part.status == "Completed" %}selected{% endif %}>Completed</option>
                                     </select>
-
                                 </form>
 
-
-
-                                <!-- EDIT -->
-
-                                <a
-                                    href="{{ url_for(
-                                        'goal.goal_details',
-                                        id=goal.id,
-                                        edit_part=part.id
-                                    ) }}"
-                                    class="small-edit-btn"
-                                >
+                                <a href="{{ url_for('goal.goal_details', id=goal.id, edit_part=part.id) }}" class="small-edit-btn">
                                     Edit
                                 </a>
 
-
-
-                                <!-- DELETE -->
-
-                                <form
-                                    method="POST"
-                                    action="{{ url_for(
-                                        'goal.delete_goal_part',
-                                        id=part.id
-                                    ) }}"
-                                    onsubmit="return confirm(
-                                        'Delete this part?'
-                                    )"
-                                >
+                                <form method="POST" action="{{ url_for('goal.delete_goal_part', id=part.id) }}" onsubmit="return confirm('Delete this part?')">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                                    <button
-                                        type="submit"
-                                        class="small-delete-btn"
-                                    >
-                                        Delete
-                                    </button>
-
+                                    <button type="submit" class="small-delete-btn">Delete</button>
                                 </form>
-
                             </div>
 
-
-
-                            <!-- =================================
-                                 INLINE EDIT FORM
-                            ================================== -->
-
-                            {% if edit_part and
-                                  edit_part.id == part.id %}
-
+                            {% if edit_part and edit_part.id == part.id %}
                                 <div class="inline-edit-part">
+                                    <h3>Edit Goal Part</h3>
+                                    <p class="inline-edit-subtitle">Update this step of your financial goal.</p>
 
-                                    <h3>
-                                        Edit Goal Part
-                                    </h3>
-
-                                    <p class="inline-edit-subtitle">
-                                        Update this step of your
-                                        financial goal.
-                                    </p>
-
-
-                                    <form
-                                        method="POST"
-                                        action="{{ url_for(
-                                            'goal.edit_goal_part',
-                                            part_id=part.id
-                                        ) }}"
-                                    >
+                                    <form method="POST" action="{{ url_for('goal.edit_goal_part', part_id=part.id) }}">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-
                                         <div class="edit-form-grid">
-
-
-                                            <!-- Part Name -->
-
-                                            <div
-                                                class="edit-form-group"
-                                            >
-
-                                                <label>
-                                                    Part Name
-                                                </label>
-
-                                                <input
-                                                    type="text"
-                                                    name="part_name"
-                                                    value="{{ part.part_name or '' }}"
-                                                    required
-                                                >
-
+                                            <div class="edit-form-group">
+                                                <label>Part Name</label>
+                                                <input type="text" name="part_name" value="{{ part.part_name or '' }}" required>
                                             </div>
 
-
-
-                                            <!-- Step Order -->
-
-                                            <div
-                                                class="edit-form-group"
-                                            >
-
-                                                <label>
-                                                    Step Order
-                                                </label>
-
-                                                <input
-                                                    type="number"
-                                                    name="step_order"
-                                                    value="{{ part.step_order or 1 }}"
-                                                    min="1"
-                                                    required
-                                                >
-
+                                            <div class="edit-form-group">
+                                                <label>Step Order</label>
+                                                <input type="number" name="step_order" value="{{ part.step_order or 1 }}" min="1" required>
                                             </div>
 
-
-
-                                            <!-- Estimated Cost -->
-
-                                            <div
-                                                class="edit-form-group"
-                                            >
-
-                                                <label>
-                                                    Estimated Cost
-                                                </label>
-
-                                                <input
-                                                    type="number"
-                                                    name="estimated_cost"
-                                                    value="{{ part.estimated_cost or 0 }}"
-                                                    min="0"
-                                                    step="0.01"
-                                                >
-
+                                            <div class="edit-form-group">
+                                                <label>Estimated Cost</label>
+                                                <input type="number" name="estimated_cost" value="{{ part.estimated_cost or 0 }}" min="0" step="0.01">
                                             </div>
 
-
-
-                                            <!-- Actual Cost -->
-
-                                            <div
-                                                class="edit-form-group"
-                                            >
-
-                                                <label>
-                                                    Actual Cost
-                                                </label>
-
-                                                <input
-                                                    type="number"
-                                                    name="actual_cost"
-                                                    value="{{ part.actual_cost or 0 }}"
-                                                    min="0"
-                                                    step="0.01"
-                                                >
-
+                                            <div class="edit-form-group">
+                                                <label>Actual Cost</label>
+                                                <input type="number" name="actual_cost" value="{{ part.actual_cost or 0 }}" min="0" step="0.01">
                                             </div>
 
-
-
-                                            <!-- Start Date -->
-
-                                            <div
-                                                class="edit-form-group"
-                                            >
-
-                                                <label>
-                                                    Start Date
-                                                </label>
-
-                                                <input
-                                                    type="date"
-                                                    name="start_date"
-
-                                                    value="{% if part.start_date %}{{ part.start_date.strftime('%Y-%m-%d') }}{% endif %}"
-                                                >
-
+                                            <div class="edit-form-group">
+                                                <label>Start Date</label>
+                                                <input type="date" name="start_date" value="{% if part.start_date %}{{ part.start_date.strftime('%Y-%m-%d') }}{% endif %}">
                                             </div>
 
-
-
-                                            <!-- Completion Date -->
-
-                                            <div
-                                                class="edit-form-group"
-                                            >
-
-                                                <label>
-                                                    Completion Date
-                                                </label>
-
-                                                <input
-                                                    type="date"
-                                                    name="completion_date"
-
-                                                    value="{% if part.completion_date %}{{ part.completion_date.strftime('%Y-%m-%d') }}{% endif %}"
-                                                >
-
+                                            <div class="edit-form-group">
+                                                <label>Completion Date</label>
+                                                <input type="date" name="completion_date" value="{% if part.completion_date %}{{ part.completion_date.strftime('%Y-%m-%d') }}{% endif %}">
                                             </div>
-
                                         </div>
 
-
-
-                                        <!-- Description -->
-
-                                        <div
-                                            class="edit-full-width"
-                                        >
-
-                                            <label>
-                                                Description
-                                            </label>
-
-                                            <textarea
-                                                name="description"
-                                                rows="3"
-                                                placeholder="Describe this step"
-                                            >{{ part.description or '' }}</textarea>
-
+                                        <div class="edit-full-width">
+                                            <label>Description</label>
+                                            <textarea name="description" rows="3" placeholder="Describe this step">{{ part.description or '' }}</textarea>
                                         </div>
 
-
-
-                                        <!-- Notes -->
-
-                                        <div
-                                            class="edit-full-width"
-                                        >
-
-                                            <label>
-                                                Notes
-                                            </label>
-
-                                            <textarea
-                                                name="notes"
-                                                rows="3"
-                                                placeholder="Additional notes"
-                                            >{{ part.notes or '' }}</textarea>
-
+                                        <div class="edit-full-width">
+                                            <label>Notes</label>
+                                            <textarea name="notes" rows="3" placeholder="Additional notes">{{ part.notes or '' }}</textarea>
                                         </div>
-
-
-
-                                        <!-- Buttons -->
 
                                         <div class="edit-buttons">
-
-                                            <button
-                                                type="submit"
-                                                class="save-edit-btn"
-                                            >
-                                                Save Changes
-                                            </button>
-
-
-                                            <a
-                                                href="{{ url_for(
-                                                    'goal.goal_details',
-                                                    id=goal.id
-                                                ) }}"
-                                                class="cancel-edit-btn"
-                                            >
-                                                Cancel
-                                            </a>
-
+                                            <button type="submit" class="save-edit-btn">Save Changes</button>
+                                            <a href="{{ url_for('goal.goal_details', id=goal.id) }}" class="cancel-edit-btn">Cancel</a>
                                         </div>
-
                                     </form>
-
                                 </div>
-
                             {% endif %}
-
-
                         </div>
-
                     </div>
-
                 {% endfor %}
-
             </div>
-
         {% else %}
-
-
-            <!-- =============================================
-                 EMPTY PARTS
-            ============================================== -->
-
             <div class="empty-parts">
-
                 <div class="empty-parts-icon">
-                    📝
+                    {{ icons.icon("file-text", size=32) }}
                 </div>
-
-                <h3>
-                    No parts added yet
-                </h3>
-
-                <p>
-                    Add steps to break this goal into smaller
-                    milestones and track your progress.
-                </p>
-
-                <button
-                    type="button"
-                    class="add-part-btn"
-                    onclick="togglePartForm()"
-                >
+                <h3>No parts added yet</h3>
+                <p>Add steps to break this goal into smaller milestones and track your progress.</p>
+                <button type="button" class="add-part-btn" onclick="togglePartForm()">
                     + Add Your First Part
                 </button>
-
             </div>
-
         {% endif %}
-
     </div>
 
-
-
-    <!-- =====================================================
-         VISUAL TIMELINE
-    ====================================================== -->
-
+    <!-- VISUAL TIMELINE -->
     <div class="details-card">
-
         <div class="details-card-header">
-
             <div>
-
-                <h2>
-                    Visual Progress Timeline
-                </h2>
-
-                <p>
-                    Follow the progress of your goal steps.
-                </p>
-
+                <h2>Visual Progress Timeline</h2>
+                <p>Follow the progress of your goal steps.</p>
             </div>
-
         </div>
 
-
         {% if goal_parts %}
-
             <div class="timeline">
-
                 {% for part in goal_parts %}
-
                     <div class="timeline-item">
-
-                        <div
-                            class="
-                                timeline-dot
-
-                                {% if part.status == 'Completed' %}
-                                    completed
-
-                                {% elif part.status == 'In Progress' %}
-                                    progress
-
-                                {% else %}
-                                    pending
-                                {% endif %}
-                            "
-                        >
-                        </div>
-
-
+                        <div class="timeline-dot {% if part.status == 'Completed' %}completed{% elif part.status == 'In Progress' %}progress{% else %}pending{% endif %}"></div>
                         <div class="timeline-content">
-
                             <div class="timeline-title">
-
-                                <strong>
-                                    {{ part.part_name }}
-                                </strong>
-
-                                <span>
-                                    {{ part.status }}
-                                </span>
-
+                                <strong>{{ part.part_name }}</strong>
+                                <span>{{ part.status }}</span>
                             </div>
-
-
-                            <p>
-                                Step {{ part.step_order }}
-                            </p>
-
+                            <p>Step {{ part.step_order }}</p>
                         </div>
-
                     </div>
-
                 {% endfor %}
-
             </div>
-
         {% else %}
-
             <div class="timeline-empty">
-
-                <span>
-                    📅
-                </span>
-
-                <p>
-                    No parts added yet.
-                    Add steps to track your progress!
-                </p>
-
+                <span>{{ icons.icon("clock", size=28) }}</span>
+                <p>No parts added yet. Add steps to track your progress!</p>
             </div>
-
         {% endif %}
-
     </div>
-
 
 </div>
 
-
-
 <script>
-
 function togglePartForm() {
-
-    const form =
-        document.getElementById("partForm");
-
+    const form = document.getElementById("partForm");
     if (form.style.display === "none") {
-
         form.style.display = "block";
-
-        form.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-        });
-
+        form.scrollIntoView({ behavior: "smooth", block: "center" });
     } else {
-
         form.style.display = "none";
-
     }
-
 }
-
 </script>
-
 
 {% endblock %}

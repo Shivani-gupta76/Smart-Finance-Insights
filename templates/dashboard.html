@@ -1,7 +1,8 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
-Dashboard
+Dashboard | FinSight — Financial Intelligence
 {% endblock %}
 
 {% block css %}
@@ -14,70 +15,71 @@ Dashboard Overview
 
 {% block content %}
 
-
 <!-- Hero Banner -->
-
 <div class="hero-banner">
-
     <div class="hero-left">
-
-        <h1>👋 Welcome Back, {{ current_user.full_name }}</h1>
-
+        <h1>{{ icons.icon("hand-wave", size=28) }} Welcome Back, {{ current_user.full_name }}</h1>
         <p class="hero-subtitle">
-            💡 Track your income, expenses and savings with FinSight.
+            {{ icons.icon("lightbulb", size=18) }} Here's your financial overview for this month.
         </p>
 
         <div class="hero-stats">
-
             <div class="hero-stat">
-                <span>💰 Savings</span>
-                <strong>₹{{ "{:,.0f}".format(total_savings) }}</strong>
+                <span>{{ icons.icon("savings", size=16) }} Monthly Savings</span>
+                <strong>₹{{ "{:,.0f}".format(monthly_savings) }}</strong>
             </div>
 
             <div class="hero-stat">
-                <span>🎯 Budget Used</span>
+                <span>{{ icons.icon("target", size=16) }} Budget Used</span>
                 <strong>{{ budget_used }}%</strong>
             </div>
-
         </div>
 
         <div class="hero-message">
-
             {% if budget_used < 50 %}
                 <span class="success-msg">
-                    ✅ Great! You're well within your monthly budget.
+                    {{ icons.icon("check-circle", size=16) }} Great! You're well within your monthly budget.
                 </span>
-
             {% elif budget_used < 80 %}
                 <span class="warning-msg">
-                    ⚠️ You're halfway through your budget. Spend wisely.
+                    {{ icons.icon("alert-triangle", size=16) }} You're halfway through your budget. Spend wisely.
                 </span>
-
             {% else %}
                 <span class="danger-msg">
-                    🚨 You've used most of your monthly budget.
+                    {{ icons.icon("alert-circle", size=16) }} You've used most of your monthly budget.
                 </span>
-
             {% endif %}
-
         </div>
-
     </div>
-
+    
+    <div class="hero-right">
+        <div class="quick-actions-title">Quick Actions</div>
+        <div class="quick-actions-grid">
+            <a href="{{ url_for('expense.expenses') }}" class="quick-action-btn primary">
+                {{ icons.icon("plus", size=16) }} Add Expense
+            </a>
+            <a href="{{ url_for('income.incomes') }}" class="quick-action-btn success">
+                {{ icons.icon("income", size=16) }} Add Income
+            </a>
+            <a href="{{ url_for('budget.budgets') }}" class="quick-action-btn warning">
+                {{ icons.icon("calculator", size=16) }} Set Budget
+            </a>
+            <a href="{{ url_for('reports.view_reports') }}" class="quick-action-btn info">
+                {{ icons.icon("report", size=16) }} Reports
+            </a>
+        </div>
+    </div>
 </div>
 
 <!-- Dashboard Cards -->
-
 <div class="dashboard-cards">
-
     <!-- Total Income -->
     <div class="card">
         <div class="card-icon income">
-            <i class="fas fa-money-bill-wave"></i>
+            {{ icons.icon("income", size=24) }}
         </div>
-
         <div class="card-info">
-            <h4>💰 Total Income</h4>
+            <h4>Total Income</h4>
             <h2>₹{{ "{:,.0f}".format(total_income) }}</h2>
         </div>
     </div>
@@ -85,11 +87,10 @@ Dashboard Overview
     <!-- Total Expenses -->
     <div class="card">
         <div class="card-icon expense">
-            <i class="fas fa-arrow-up"></i>
+            {{ icons.icon("expense", size=24) }}
         </div>
-
         <div class="card-info">
-            <h4>💸 Total Expense</h4>
+            <h4>Total Expense</h4>
             <h2>₹{{ "{:,.0f}".format(total_expenses) }}</h2>
         </div>
     </div>
@@ -97,52 +98,46 @@ Dashboard Overview
     <!-- Total Savings -->
     <div class="card">
         <div class="card-icon savings">
-            <i class="fas fa-piggy-bank"></i>
+            {{ icons.icon("savings", size=24) }}
         </div>
-
         <div class="card-info">
-            <h4>🏦 Total Savings</h4>
-
-            <h2 {% if total_savings < 0 %}style="color:#EF4444;"{% endif %}>
+            <h4>Total Savings</h4>
+            <h2 {% if total_savings < 0 %}style="color: var(--danger-color);"{% endif %}>
                 ₹{{ "{:,.0f}".format(total_savings) }}
             </h2>
-
         </div>
     </div>
 
     <!-- Monthly Budget -->
     <div class="card">
         <div class="card-icon budget">
-            <i class="fas fa-bullseye"></i>
+            {{ icons.icon("calculator", size=24) }}
         </div>
-
         <div class="card-info">
-            <h4>🎯 Monthly Budget</h4>
+            <h4>Monthly Budget</h4>
             <h2>₹{{ "{:,.0f}".format(budget_amount) }}</h2>
         </div>
     </div>
-
 </div>
 
 <!-- Goal-Linked Expense Smart Cards -->
 {% if goal_expense_analytics %}
 <div class="dashboard-cards" style="margin-top: 16px;">
-
     <!-- Total Goal-Linked Expenses -->
-    <div class="card" style="border-left: 4px solid #2563EB;">
-        <div class="card-icon" style="background: #EFF6FF; color: #2563EB;">
-            <i class="fas fa-receipt"></i>
+    <div class="card" style="border-left: 4px solid var(--primary-color);">
+        <div class="card-icon" style="background: var(--primary-light); color: var(--primary-color);">
+            {{ icons.icon("expense", size=20) }}
         </div>
         <div class="card-info">
-            <h4>🎯 Goal-Linked Expenses</h4>
+            <h4>Goal-Linked Expenses</h4>
             <h2>₹{{ "{:,.0f}".format(goal_expense_analytics.total_all_goal_linked) }}</h2>
         </div>
     </div>
 
     <!-- Goals with Related Expenses -->
-    <div class="card" style="border-left: 4px solid #16A34A;">
-        <div class="card-icon" style="background: #F0FDF4; color: #16A34A;">
-            <i class="fas fa-bullseye"></i>
+    <div class="card" style="border-left: 4px solid var(--success-color);">
+        <div class="card-icon" style="background: var(--success-bg); color: var(--success-color);">
+            {{ icons.icon("target", size=20) }}
         </div>
         <div class="card-info">
             <h4>Goals with Expenses</h4>
@@ -151,21 +146,21 @@ Dashboard Overview
     </div>
 
     <!-- Most Expensive Goal -->
-    <div class="card" style="border-left: 4px solid #D97706;">
-        <div class="card-icon" style="background: #FFFBEB; color: #D97706;">
-            <i class="fas fa-crown"></i>
+    <div class="card" style="border-left: 4px solid var(--warning-color);">
+        <div class="card-icon" style="background: var(--warning-bg); color: var(--warning-color);">
+            {{ icons.icon("crown", size=20) }}
         </div>
         <div class="card-info">
             <h4>Most Expensive Goal</h4>
             <h2 style="font-size: 18px;">{{ goal_expense_analytics.most_expensive_goal_name }}</h2>
-            <span style="font-size: 12px; color: #64748B;">₹{{ "{:,.0f}".format(goal_expense_analytics.most_expensive_goal_amt) }}</span>
+            <span style="font-size: 12px; color: var(--text-muted);">₹{{ "{:,.0f}".format(goal_expense_analytics.most_expensive_goal_amt) }}</span>
         </div>
     </div>
 
     <!-- Most Recent Goal Expense -->
-    <div class="card" style="border-left: 4px solid #8B5CF6;">
-        <div class="card-icon" style="background: #F3E8FF; color: #8B5CF6;">
-            <i class="fas fa-clock"></i>
+    <div class="card" style="border-left: 4px solid #8b5cf6;">
+        <div class="card-icon" style="background: #f3e8ff; color: #8b5cf6;">
+            {{ icons.icon("clock", size=20) }}
         </div>
         <div class="card-info">
             <h4>Most Recent Goal Expense</h4>
@@ -178,169 +173,111 @@ Dashboard Overview
             </h2>
         </div>
     </div>
-
 </div>
 {% endif %}
 
 <!-- Financial Summary -->
-
 <div class="dashboard-box">
-
-    <h3>📊 Financial Summary</h3>
-
+    <h3>{{ icons.icon("chart-line", size=20) }} Financial Summary</h3>
     <table>
-
         <tbody>
-
             <tr>
                 <td><strong>Total Income</strong></td>
                 <td>₹{{ "{:,.0f}".format(total_income) }}</td>
             </tr>
-
             <tr>
                 <td><strong>Total Expenses</strong></td>
                 <td>₹{{ "{:,.0f}".format(total_expenses) }}</td>
             </tr>
-
             <tr>
                 <td><strong>Total Savings</strong></td>
-
-                <td {% if total_savings < 0 %}style="color:#EF4444;"{% endif %}>
+                <td {% if total_savings < 0 %}style="color: var(--danger-color);"{% endif %}>
                     ₹{{ "{:,.0f}".format(total_savings) }}
                 </td>
             </tr>
-
             <tr>
                 <td><strong>Remaining Budget</strong></td>
-
-                <td {% if remaining_budget < 0 %}style="color:#EF4444;"{% endif %}>
+                <td {% if remaining_budget < 0 %}style="color: var(--danger-color);"{% endif %}>
                     ₹{{ "{:,.0f}".format(remaining_budget) }}
                 </td>
             </tr>
-
             <tr>
                 <td><strong>Budget Used</strong></td>
                 <td>{{ budget_used }}%</td>
             </tr>
-
         </tbody>
-
     </table>
-
 </div>
 
-<!-- Charts -->
-
+<!-- Charts Grid -->
 <div class="dashboard-grid">
-
     <!-- Expense Breakdown -->
-
     <div class="dashboard-box">
-
-        <h3>📊 Expense Breakdown</h3>
-
+        <h3>{{ icons.icon("pie-chart", size=20) }} Expense Breakdown</h3>
         <div style="height:300px;">
             <canvas id="expenseChart"></canvas>
         </div>
-
     </div>
 
     <!-- Monthly Expense Trend -->
-
     <div class="dashboard-box">
-
-        <h3>📈 Monthly Expense Trend</h3>
-
+        <h3>{{ icons.icon("analytics", size=20) }} Monthly Expense Trend</h3>
         <div style="height:300px;">
             <canvas id="monthlyChart"></canvas>
         </div>
-
     </div>
-
 </div>
 
 <!-- Recent Transactions -->
-
 <div class="dashboard-box transactions">
-
-    <h3>🧾 Recent Transactions</h3>
-
+    <h3>{{ icons.icon("receipt", size=20) }} Recent Transactions</h3>
     <table>
-
         <thead>
-
             <tr>
-
                 <th>Date</th>
                 <th>Title</th>
                 <th>Category</th>
                 <th>Payment Mode</th>
                 <th>Amount</th>
-
             </tr>
-
         </thead>
-
         <tbody>
-
         {% if recent_transactions %}
-
-    {% for expense in recent_transactions %}
-
-    <tr>
-
-    <td>{{ expense.expense_date.strftime("%d-%m-%Y") }}</td>
-    <td>{{ expense.title }}</td>
-    <td>{{ expense.category }}</td>
-    <td>{{ expense.payment_method }}</td>
-    <td>₹{{ "{:,.0f}".format(expense.amount) }}</td>
-
-    </tr>
-
-    {% endfor %}
-
-{% else %}
-
-    <tr>
-
-        <td colspan="5" class="no-data">
-            📭 No transactions available.
-        </td>
-
-    </tr>
-
-{% endif %}
-
+            {% for expense in recent_transactions %}
+            <tr>
+                <td>{{ expense.expense_date.strftime("%d-%m-%Y") }}</td>
+                <td><strong>{{ expense.title }}</strong></td>
+                <td><span class="badge badge-info">{{ expense.category }}</span></td>
+                <td>{{ expense.payment_method }}</td>
+                <td><strong style="color: var(--danger-color);">₹{{ "{:,.0f}".format(expense.amount) }}</strong></td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="5" class="no-data">
+                    {{ icons.icon("inbox", size=32) }}
+                    <p style="margin-top: 8px;">No transactions available.</p>
+                </td>
+            </tr>
+        {% endif %}
         </tbody>
-
     </table>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-
-// ---------------- Expense Pie Chart ----------------
-
+// ---------------- Expense Pie / Doughnut Chart ----------------
 const expenseCanvas = document.getElementById("expenseChart");
-
 if (expenseCanvas) {
-
     new Chart(expenseCanvas.getContext("2d"), {
-
-        type: "pie",
-
+        type: "doughnut",
         data: {
-
             labels: {{ categories | default([], true) | tojson }},
-
             datasets: [{
-
                 data: {{ amounts | default([], true) | tojson }},
-
                 backgroundColor: [
-                    "#3B82F6",
+                    "#2563EB",
                     "#10B981",
                     "#F59E0B",
                     "#EF4444",
@@ -349,87 +286,62 @@ if (expenseCanvas) {
                     "#EC4899",
                     "#6366F1"
                 ],
-
-                borderColor: "#ffffff",
-                borderWidth: 2
-
+                borderWidth: 2,
+                hoverOffset: 6
             }]
-
         },
-
         options: {
-
             responsive: true,
             maintainAspectRatio: false,
-
+            cutout: '68%',
             plugins: {
-
                 legend: {
-
-                    position: "bottom"
-
+                    position: "bottom",
+                    labels: {
+                        padding: 14,
+                        boxWidth: 12,
+                        font: { family: 'Plus Jakarta Sans', size: 12 }
+                    }
                 }
-
             }
-
         }
-
     });
-
 }
 
 // ---------------- Monthly Expense Bar Chart ----------------
-
 const monthlyCanvas = document.getElementById("monthlyChart");
-
 if (monthlyCanvas) {
-
     new Chart(monthlyCanvas.getContext("2d"), {
-
         type: "bar",
-
         data: {
-
             labels: {{ months | default([], true) | tojson }},
-
             datasets: [{
-
                 label: "Monthly Expenses",
-
                 data: {{ monthly_amounts | default([], true) | tojson }},
-
-                backgroundColor: "#3B82F6",
-
-                borderColor: "#2563EB",
-
+                backgroundColor: "#2563EB",
+                borderColor: "#1D4ED8",
+                borderRadius: 6,
                 borderWidth: 1
-
             }]
-
         },
-
         options: {
-
             responsive: true,
-
             maintainAspectRatio: false,
-
+            plugins: {
+                legend: { display: false }
+            },
             scales: {
-
                 y: {
-
-                    beginAtZero: true
-
+                    beginAtZero: true,
+                    grid: { color: 'rgba(226, 232, 240, 0.5)' }
+                },
+                x: {
+                    grid: { display: false }
                 }
-
             }
-
         }
-
     });
-
 }
-
 </script>
 
 {% endblock %}

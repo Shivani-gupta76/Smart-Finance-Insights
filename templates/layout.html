@@ -1,10 +1,11 @@
+{% import "partials/svg_icons.html" as icons %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{% block title %}FinSight{% endblock %}</title>
+    <title>{% block title %}FinSight — Finance Analytics Platform{% endblock %}</title>
 
     <script>
         (function() {
@@ -13,7 +14,6 @@
             var theme = (savedTheme && savedTheme !== 'system') ? savedTheme : (localTheme || 'light');
             if (theme !== 'dark') { theme = 'light'; }
             localStorage.setItem('finsight_theme', theme);
-
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.setAttribute('data-rendered-theme', theme);
         })();
@@ -22,109 +22,123 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     {% block css %}{% endblock %}
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 
 <body>
 
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <div class="wrapper">
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar" id="appSidebar">
 
+        <!-- Brand -->
         <a href="{{ url_for('dashboard') }}" class="logo">
-            <i class="fa-solid fa-wallet"></i>
-            <h2>FinSight</h2>
+            <div class="logo-icon-box">
+                {{ icons.icon("bar-chart-2", size=20) }}
+            </div>
+            <div class="logo-text">
+                <h2>FinSight</h2>
+                <span class="logo-subtitle">FINANCIAL INTELLIGENCE</span>
+            </div>
         </a>
 
+        <!-- Navigation -->
         <ul class="menu">
+
+            <li><span class="menu-section-label">Main</span></li>
 
             <li>
                 <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
-                    <i class="fa-solid fa-house"></i>
+                    {{ icons.icon("dashboard", size=17) }}
                     <span>Dashboard</span>
                 </a>
             </li>
 
+            <li><span class="menu-section-label">Finance</span></li>
+
             <li>
                 <a href="{{ url_for('expense.expenses') }}" class="{% if request.endpoint and request.endpoint.startswith('expense') %}active{% endif %}">
-                    <i class="fa-solid fa-wallet"></i>
+                    {{ icons.icon("receipt", size=17) }}
                     <span>Expenses</span>
                 </a>
             </li>
 
             <li>
                 <a href="{{ url_for('income.incomes') }}" class="{% if request.endpoint and request.endpoint.startswith('income') %}active{% endif %}">
-                    <i class="fa-solid fa-money-bill-wave"></i>
+                    {{ icons.icon("income", size=17) }}
                     <span>Income</span>
                 </a>
             </li>
 
-            <!-- Accounts -->
             <li>
                 <a href="{{ url_for('account.accounts') }}" class="{% if request.endpoint and request.endpoint.startswith('account') %}active{% endif %}">
-                    <i class="fa-solid fa-building-columns"></i>
+                    {{ icons.icon("bank", size=17) }}
                     <span>Accounts</span>
                 </a>
             </li>
 
             <li>
                 <a href="{{ url_for('budget.budgets') }}" class="{% if request.endpoint and request.endpoint.startswith('budget') %}active{% endif %}">
-                    <i class="fa-solid fa-bullseye"></i>
+                    {{ icons.icon("calculator", size=17) }}
                     <span>Budget</span>
                 </a>
             </li>
 
             <li>
                 <a href="{{ url_for('investment.investments') }}" class="{% if request.endpoint and request.endpoint.startswith('investment') %}active{% endif %}">
-                    <i class="fa-solid fa-chart-line"></i>
+                    {{ icons.icon("briefcase", size=17) }}
                     <span>Investments</span>
                 </a>
             </li>
 
             <li>
                 <a href="{{ url_for('goal.goals') }}" class="{% if request.endpoint and request.endpoint.startswith('goal') %}active{% endif %}">
-                    <i class="fa-solid fa-bullseye"></i>
+                    {{ icons.icon("target", size=17) }}
                     <span>Goals</span>
                 </a>
             </li>
 
+            <li><span class="menu-section-label">Insights</span></li>
+
             <li>
                 <a href="{{ url_for('analytics.analytics') }}" class="{% if request.endpoint and request.endpoint.startswith('analytics') %}active{% endif %}">
-                    <i class="fa-solid fa-chart-pie"></i>
+                    {{ icons.icon("analytics", size=17) }}
                     <span>Analytics</span>
                 </a>
             </li>
 
             <li>
                 <a href="{{ url_for('reports.view_reports') }}" class="{% if request.endpoint and request.endpoint.startswith('reports') %}active{% endif %}">
-                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                    {{ icons.icon("report", size=17) }}
                     <span>Reports</span>
                 </a>
             </li>
 
-
             <li>
                 <a href="{{ url_for('alert.alerts') }}" class="{% if request.endpoint and request.endpoint.startswith('alert') %}active{% endif %}">
-                    <i class="fa-solid fa-bell"></i>
+                    {{ icons.icon("bell", size=17) }}
                     <span>Alerts</span>
                     {% if unread_alerts_count and unread_alerts_count > 0 %}
-                        <span style="margin-left: auto; background: #DC2626; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 10px;">{{ unread_alerts_count }}</span>
+                        <span class="nav-badge">{{ unread_alerts_count }}</span>
                     {% endif %}
                 </a>
             </li>
 
+            <li><span class="menu-section-label">Account</span></li>
+
             <li>
                 <a href="{{ url_for('profile.view_profile') }}" class="{% if request.endpoint and request.endpoint.startswith('profile') %}active{% endif %}">
-                    <i class="fa-solid fa-user"></i>
+                    {{ icons.icon("user", size=17) }}
                     <span>Profile</span>
                 </a>
             </li>
 
             <li>
                 <a href="{{ url_for('auth.logout') }}">
-                    <i class="fa-solid fa-right-from-bracket"></i>
+                    {{ icons.icon("logout", size=17) }}
                     <span>Logout</span>
                 </a>
             </li>
@@ -133,21 +147,28 @@
 
     </aside>
 
-    <!-- Main Content -->
+    <!-- ==================== MAIN CONTENT ==================== -->
     <div class="main-content">
 
         {% if current_user.is_authenticated %}
+        <!-- Topbar -->
         <div class="topbar">
-            <div class="page-title">
-                {% block page_title %}Overview{% endblock %}
+            <div class="topbar-left">
+                <button type="button" class="mobile-toggle-btn" id="mobileMenuBtn" aria-label="Toggle navigation">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    {% block page_title %}Overview{% endblock %}
+                </div>
             </div>
+
             <div class="top-navbar-right">
-                <!-- Compact Global Theme Selector Dropdown -->
+                <!-- Theme Switcher -->
                 <div class="nav-theme-dropdown">
                     <button type="button" class="nav-theme-btn" id="themeDropdownBtn" title="Select Theme">
                         <span id="themeBtnIcon"><i class="fa-solid fa-circle-half-stroke"></i></span>
                         <span class="theme-btn-label">Theme</span>
-                        <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 9px;"></i>
                     </button>
                     <div class="nav-theme-menu" id="themeDropdownMenu">
                         <div class="theme-menu-item" onclick="selectGlobalTheme('light')">
@@ -171,7 +192,7 @@
                     {% endif %}
                 </button>
 
-                <!-- Profile Picture & Link -->
+                <!-- Profile -->
                 <a href="{{ url_for('profile.view_profile') }}" class="nav-profile-btn" title="View Profile">
                     {% if current_user.profile_image %}
                         <img src="{{ url_for('static', filename=current_user.profile_image) }}" alt="Profile" class="nav-profile-img">
@@ -181,19 +202,29 @@
                         <i class="fa-solid fa-circle-user"></i>
                     {% endif %}
                     <span class="nav-user-name">{{ current_user.full_name }}</span>
-                    <i class="fa-solid fa-chevron-down" style="font-size: 11px; margin-left: 2px;"></i>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 9px; color: var(--text-muted);"></i>
                 </a>
             </div>
         </div>
         {% endif %}
 
+        <!-- Content -->
         <div class="content">
 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="alert {{ category }}">
-                            {{ message }}
+                            {% if category == 'success' %}
+                                {{ icons.icon("check-circle", size=18) }}
+                            {% elif category in ['danger', 'error'] %}
+                                {{ icons.icon("alert-circle", size=18) }}
+                            {% elif category == 'warning' %}
+                                {{ icons.icon("alert-triangle", size=18) }}
+                            {% else %}
+                                {{ icons.icon("info", size=18) }}
+                            {% endif %}
+                            <span>{{ message }}</span>
                         </div>
                     {% endfor %}
                 {% endif %}
@@ -209,19 +240,24 @@
 </div>
 
 {% if current_user.is_authenticated %}
-<!-- Right-Side Notification Popup Drawer -->
+<!-- Notification Drawer Overlay -->
 <div class="notification-drawer-overlay" id="notificationOverlay"></div>
+
+<!-- Notification Drawer -->
 <div class="notification-drawer" id="notificationDrawer">
     <div class="drawer-header">
         <div class="drawer-title">
-            <i class="fa-solid fa-bell" style="color: #2563EB;"></i>
+            {{ icons.icon("bell", size=18) }}
             <h3>Notifications</h3>
             {% if unread_alerts_count and unread_alerts_count > 0 %}
                 <span class="drawer-unread-tag" id="drawerUnreadTag">{{ unread_alerts_count }} unread</span>
             {% endif %}
         </div>
-        <button type="button" class="drawer-close-btn" id="drawerCloseBtn">&times;</button>
+        <button type="button" class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
     </div>
+
     <div class="drawer-body">
         {% if global_recent_alerts %}
             <div class="drawer-alert-list">
@@ -247,7 +283,10 @@
                             </div>
                             <p class="drawer-alert-msg">{{ alert.message }}</p>
                             <div class="drawer-alert-footer">
-                                <span class="drawer-alert-time"><i class="fa-regular fa-clock"></i> {{ alert.created_at.strftime('%d %b %Y, %I:%M %p') if alert.created_at else '' }}</span>
+                                <span class="drawer-alert-time">
+                                    <i class="fa-regular fa-clock"></i>
+                                    {{ alert.created_at.strftime('%d %b %Y, %I:%M %p') if alert.created_at else '' }}
+                                </span>
                                 <form action="{{ url_for('alert.toggle_alert_read', alert_id=alert.id) }}" method="POST" style="display:inline;">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="drawer-read-btn">
@@ -261,45 +300,48 @@
             </div>
         {% else %}
             <div class="drawer-empty-state">
-                <i class="fa-solid fa-bell-slash" style="font-size: 32px; color: #94A3B8; margin-bottom: 10px;"></i>
+                {{ icons.icon("bell", size=36) }}
                 <p>No new notifications</p>
             </div>
         {% endif %}
     </div>
+
     <div class="drawer-footer">
-        <a href="{{ url_for('alert.alerts') }}" class="btn-view-all-alerts">View All Alerts Dashboard &rarr;</a>
+        <a href="{{ url_for('alert.alerts') }}" class="btn-view-all-alerts">
+            View All Alerts &rarr;
+        </a>
     </div>
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const bellBtn = document.getElementById("notificationBellBtn");
-        const overlay = document.getElementById("notificationOverlay");
-        const drawer = document.getElementById("notificationDrawer");
-        const closeBtn = document.getElementById("drawerCloseBtn");
+        // Notification Drawer
+        const bellBtn   = document.getElementById("notificationBellBtn");
+        const overlay   = document.getElementById("notificationOverlay");
+        const drawer    = document.getElementById("notificationDrawer");
+        const closeBtn  = document.getElementById("drawerCloseBtn");
 
-        function openDrawer() {
-            if (overlay && drawer) {
-                overlay.classList.add("active");
-                drawer.classList.add("active");
-            }
-        }
+        function openDrawer()  { overlay && overlay.classList.add("active"); drawer && drawer.classList.add("active"); }
+        function closeDrawer() { overlay && overlay.classList.remove("active"); drawer && drawer.classList.remove("active"); }
 
-        function closeDrawer() {
-            if (overlay && drawer) {
-                overlay.classList.remove("active");
-                drawer.classList.remove("active");
-            }
-        }
+        if (bellBtn)  bellBtn.addEventListener("click", openDrawer);
+        if (overlay)  overlay.addEventListener("click", closeDrawer);
+        if (closeBtn) closeBtn.addEventListener("click", closeDrawer);
 
-        if (bellBtn) {
-            bellBtn.addEventListener("click", openDrawer);
-        }
-        if (overlay) {
-            overlay.addEventListener("click", closeDrawer);
-        }
-        if (closeBtn) {
-            closeBtn.addEventListener("click", closeDrawer);
+        // Mobile Sidebar
+        const mobileBtn    = document.getElementById("mobileMenuBtn");
+        const sidebar      = document.getElementById("appSidebar");
+        const sidebarOvl   = document.getElementById("sidebarOverlay");
+
+        if (mobileBtn && sidebar && sidebarOvl) {
+            mobileBtn.addEventListener("click", function() {
+                sidebar.classList.toggle("active");
+                sidebarOvl.classList.toggle("active");
+            });
+            sidebarOvl.addEventListener("click", function() {
+                sidebar.classList.remove("active");
+                sidebarOvl.classList.remove("active");
+            });
         }
     });
 </script>
@@ -308,18 +350,16 @@
 <script>
     function updateThemeUIState(theme) {
         var checkLight = document.getElementById("check-light");
-        var checkDark = document.getElementById("check-dark");
-        var themeIcon = document.getElementById("themeBtnIcon");
+        var checkDark  = document.getElementById("check-dark");
+        var themeIcon  = document.getElementById("themeBtnIcon");
 
         if (checkLight && checkLight.parentElement) checkLight.parentElement.classList.toggle("selected", theme === "light");
-        if (checkDark && checkDark.parentElement) checkDark.parentElement.classList.toggle("selected", theme === "dark");
+        if (checkDark  && checkDark.parentElement)  checkDark.parentElement.classList.toggle("selected",  theme === "dark");
 
         if (themeIcon) {
-            if (theme === "dark") {
-                themeIcon.innerHTML = '<i class="fa-solid fa-moon" style="color: #3B82F6;"></i>';
-            } else {
-                themeIcon.innerHTML = '<i class="fa-solid fa-sun" style="color: #D97706;"></i>';
-            }
+            themeIcon.innerHTML = theme === "dark"
+                ? '<i class="fa-solid fa-moon" style="color:#3B82F6;"></i>'
+                : '<i class="fa-solid fa-sun" style="color:#D97706;"></i>';
         }
     }
 
@@ -328,21 +368,16 @@
         document.documentElement.setAttribute('data-theme', theme);
         document.documentElement.setAttribute('data-rendered-theme', theme);
         localStorage.setItem('finsight_theme', theme);
-
         updateThemeUIState(theme);
 
-        // Update Chart.js themes if charts exist on page
-        if (window.Chart) {
-            if (typeof updateChartColors === 'function') {
-                updateChartColors();
-            }
+        if (window.Chart && typeof updateChartColors === 'function') {
+            updateChartColors();
         }
 
-        // Persist theme choice to database
         if ("{{ current_user.is_authenticated }}" === "True") {
             fetch("{{ url_for('profile.update_theme') }}", {
                 method: "POST",
-                headers: { 
+                headers: {
                     "Content-Type": "application/json",
                     "X-CSRFToken": "{{ csrf_token() }}"
                 },
@@ -358,15 +393,14 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        var themeBtn = document.getElementById("themeDropdownBtn");
+        var themeBtn  = document.getElementById("themeDropdownBtn");
         var themeMenu = document.getElementById("themeDropdownMenu");
-        
+
         if (themeBtn && themeMenu) {
             themeBtn.addEventListener("click", function(e) {
                 e.stopPropagation();
                 themeMenu.classList.toggle("active");
             });
-
             document.addEventListener("click", function(e) {
                 if (!themeMenu.contains(e.target) && !themeBtn.contains(e.target)) {
                     themeMenu.classList.remove("active");

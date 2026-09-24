@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import re
+from datetime import date, timedelta
 from flask_login import login_required, current_user
 from sqlalchemy import func, inspect, text
 
@@ -173,16 +174,46 @@ def dashboard():
         .all()
     )
 
-    # Get user's budget, accounts, and goals
-    budget_obj = Budget.query.filter_by(user_id=current_user.id).first()
+    # Get user's budget for current month & current year, accounts, and goals
+    today = date.today()
+    curr_month_name = today.strftime("%B")
+    curr_year = today.year
+
+    budget_obj = Budget.query.filter(
+        Budget.user_id == current_user.id,
+        func.lower(Budget.month) == curr_month_name.lower(),
+        Budget.year == curr_year
+    ).first()
+
     goals = Goal.query.filter_by(user_id=current_user.id).all()
 
-    # Net Savings & Budget Metrics
+    # Net Savings & Budget Metrics for Lower Dashboard Cards (All-Time Totals preserved)
     total_savings = total_income - total_expenses
     budget_amount = budget_obj.monthly_budget if budget_obj else 0.0
-    remaining_budget = budget_amount - total_expenses
 
-    budget_used = round((total_expenses / budget_amount) * 100, 2) if budget_amount > 0 else 0.0
+    # Current-Month Calculations for Hero Section (Bounded to current month through today)
+    start_date = date(curr_year, today.month, 1)
+    if today.month == 12:
+        last_day_curr = date(curr_year + 1, 1, 1) - timedelta(days=1)
+    else:
+        last_day_curr = date(curr_year, today.month + 1, 1) - timedelta(days=1)
+    end_date = min(today, last_day_curr)
+
+    current_month_income = db.session.query(func.sum(Income.amount)).filter(
+        Income.user_id == current_user.id,
+        Income.income_date >= start_date,
+        Income.income_date <= end_date
+    ).scalar() or 0.0
+
+    current_month_expenses = db.session.query(func.sum(Expense.amount)).filter(
+        Expense.user_id == current_user.id,
+        Expense.expense_date >= start_date,
+        Expense.expense_date <= end_date
+    ).scalar() or 0.0
+
+    monthly_savings = current_month_income - current_month_expenses
+    remaining_budget = budget_amount - current_month_expenses if budget_amount > 0 else 0.0
+    budget_used = round((current_month_expenses / budget_amount) * 100, 1) if budget_amount > 0 else 0.0
 
     # Expense Breakdown (Pie Chart) via SQL aggregation
     category_data = (
@@ -245,6 +276,7 @@ def dashboard():
         total_income=total_income,
         total_expenses=total_expenses,
         total_savings=total_savings,
+        monthly_savings=monthly_savings,
         total_account_balance=total_account_balance,
         budget_amount=budget_amount,
         remaining_budget=remaining_budget,

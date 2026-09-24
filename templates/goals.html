@@ -1,1171 +1,234 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
-Financial Goals
+Financial Goals | FinSight — Financial Intelligence
 {% endblock %}
 
 {% block css %}
-
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/goal.css') }}"
->
-
-<style>
-    /* =========================================================
-       GOALS DASHBOARD - PAGE UI
-    ========================================================= */
-
-    .goal-page {
-        width: 100%;
-        max-width: 1400px;
-        margin: 0 auto;
-        padding-bottom: 40px;
-    }
-
-    .goals-dashboard-header {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 22px;
-    }
-
-    .goals-dashboard-icon {
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        background: #eef2ff;
-        border: 1px solid #e0e7ff;
-        border-radius: 14px;
-        font-size: 25px;
-    }
-
-    .goals-dashboard-header h1 {
-        margin: 0;
-        color: #0f172a;
-        font-size: 30px;
-        line-height: 1.2;
-        font-weight: 750;
-    }
-
-    .goals-dashboard-header p {
-        margin: 5px 0 0;
-        color: #64748b;
-        font-size: 15px;
-    }
-
-    /* =========================================================
-       SUMMARY CARDS
-    ========================================================= */
-
-    .goal-summary {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    .goal-summary .goal-card {
-        position: relative;
-        overflow: hidden;
-        min-height: 120px;
-        padding: 22px;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        background: #ffffff;
-        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
-    }
-
-    .goal-summary .goal-card::after {
-        content: "";
-        position: absolute;
-        width: 75px;
-        height: 75px;
-        right: -25px;
-        bottom: -30px;
-        border-radius: 50%;
-        background: #f1f5f9;
-    }
-
-    .goal-card-label {
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        color: #64748b;
-        font-size: 15px;
-        font-weight: 600;
-    }
-
-    .goal-card-icon {
-        width: 34px;
-        height: 34px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 10px;
-        background: #f8fafc;
-        font-size: 18px;
-    }
-
-    .goal-summary .goal-card h2 {
-        position: relative;
-        z-index: 1;
-        margin: 13px 0 0;
-        color: #0f172a;
-        font-size: 32px;
-        line-height: 1;
-        font-weight: 750;
-    }
-
-    /* =========================================================
-       FEATURED GOAL
-    ========================================================= */
-
-    .featured-goal {
-        margin-bottom: 24px;
-        padding: 22px;
-        border: 1px solid #dbeafe;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #f8fbff 0%, #ffffff 65%);
-        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.06);
-    }
-
-    .featured-goal-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 18px;
-    }
-
-    .featured-goal-title {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 0;
-    }
-
-    .featured-goal-icon {
-        width: 46px;
-        height: 46px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        border-radius: 12px;
-        background: #fff7ed;
-        font-size: 23px;
-    }
-
-    .featured-goal-title h2 {
-        margin: 0;
-        color: #0f172a;
-        font-size: 21px;
-        line-height: 1.2;
-    }
-
-    .featured-goal-title p {
-        margin: 4px 0 0;
-        color: #64748b;
-        font-size: 13px;
-    }
-
-    .featured-goal-badge {
-        flex-shrink: 0;
-        padding: 7px 12px;
-        border-radius: 999px;
-        background: #eff6ff;
-        color: #2563eb;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    .featured-goal-progress-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 15px;
-        margin-bottom: 8px;
-        color: #475569;
-        font-size: 13px;
-        font-weight: 600;
-    }
-
-    .featured-goal-progress-row strong {
-        color: #2563eb;
-        font-size: 15px;
-    }
-
-    .featured-progress-track {
-        width: 100%;
-        height: 10px;
-        overflow: hidden;
-        border-radius: 999px;
-        background: #e2e8f0;
-    }
-
-    .featured-progress-fill {
-        height: 100%;
-        border-radius: inherit;
-        background: #2563eb;
-        transition: width 0.3s ease;
-    }
-
-    .featured-goal-bottom {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-        color: #64748b;
-        font-size: 12px;
-    }
-
-    /* =========================================================
-       SECTION HEADERS
-    ========================================================= */
-
-    .goal-box {
-        border-radius: 16px !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
-    }
-
-    .goal-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
-    }
-
-    .goal-header h2 {
-        margin-bottom: 5px;
-    }
-
-    .section-kicker {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 6px;
-        color: #2563eb;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    /* =========================================================
-       FORM
-    ========================================================= */
-
-    .goal-form-row {
-        gap: 18px !important;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 7px;
-        color: #334155;
-        font-size: 14px;
-        font-weight: 650;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        width: 100%;
-        box-sizing: border-box;
-        border: 1px solid #cbd5e1;
-        border-radius: 9px;
-        background: #ffffff;
-        color: #0f172a;
-        font-size: 14px;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .form-group input,
-    .form-group select {
-        min-height: 44px;
-        padding: 10px 12px;
-    }
-
-    .form-group textarea {
-        padding: 11px 12px;
-        resize: vertical;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
-    }
-
-    .goal-submit-row {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 18px;
-    }
-
-    .goal-submit-row .btn-primary {
-        min-width: 130px;
-    }
-
-    /* =========================================================
-       GOAL LIST
-    ========================================================= */
-
-    .goal-list-count {
-        padding: 6px 11px;
-        border-radius: 999px;
-        background: #f1f5f9;
-        color: #475569;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    .goal-item {
-        position: relative;
-        display: grid;
-        grid-template-columns: minmax(220px, 1.15fr) minmax(220px, 1fr) auto;
-        align-items: center;
-        gap: 24px;
-        margin-bottom: 14px;
-        padding: 20px;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        background: #ffffff;
-        transition: transform 0.15s ease, box-shadow 0.15s ease,
-                    border-color 0.15s ease;
-    }
-
-    .goal-item:last-child {
-        margin-bottom: 0;
-    }
-
-    .goal-item:hover {
-        transform: translateY(-1px);
-        border-color: #cbd5e1;
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-    }
-
-    .goal-info h3 {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        margin: 0 0 7px;
-        color: #0f172a;
-        font-size: 19px;
-    }
-
-    .goal-info p {
-        margin: 0 0 6px;
-        color: #64748b;
-        font-size: 12px;
-    }
-
-    .goal-info small {
-        color: #94a3b8;
-        font-size: 13px;
-    }
-
-    .goal-progress {
-        min-width: 0;
-    }
-
-    .goal-progress-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 8px;
-        color: #475569;
-        font-size: 13px;
-    }
-
-    .goal-progress-top strong {
-        color: #2563eb;
-        font-size: 15px;
-    }
-
-    .progress-bar {
-        width: 100%;
-        height: 9px;
-        overflow: hidden;
-        border-radius: 999px;
-        background: #e2e8f0;
-    }
-
-    .progress-fill {
-        height: 100%;
-        min-width: 0;
-        border-radius: inherit;
-        background: #2563eb;
-    }
-
-    .goal-progress > small {
-        display: block;
-        margin-top: 7px;
-        color: #64748b;
-        font-size: 12px;
-    }
-
-    .goal-status {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-    }
-
-    .status-completed,
-    .status-active {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        white-space: nowrap;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    .status-completed {
-        background: #ecfdf5;
-        color: #15803d;
-    }
-
-    .status-active {
-        background: #eff6ff;
-        color: #2563eb;
-    }
-
-    .goal-actions {
-        grid-column: 1 / -1;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 8px;
-        padding-top: 14px;
-        border-top: 1px solid #f1f5f9;
-    }
-
-    .goal-actions a {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 36px;
-        padding: 7px 12px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 650;
-        box-sizing: border-box;
-    }
-
-    /* =========================================================
-       EMPTY STATE
-    ========================================================= */
-
-    .empty-goal {
-        padding: 42px 20px;
-        text-align: center;
-        border: 1px dashed #cbd5e1;
-        border-radius: 14px;
-        background: #f8fafc;
-    }
-
-    .empty-goal-icon {
-        width: 58px;
-        height: 58px;
-        margin: 0 auto 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 16px;
-        background: #eef2ff;
-        font-size: 28px;
-    }
-
-    .empty-goal h3 {
-        margin: 0 0 7px;
-        color: #0f172a;
-        font-size: 18px;
-    }
-
-    .empty-goal p {
-        max-width: 420px;
-        margin: 0 auto;
-        color: #64748b;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    /* =========================================================
-       RESPONSIVE
-    ========================================================= */
-
-    @media (max-width: 1000px) {
-        .goal-item {
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-
-        .goal-status {
-            justify-content: flex-start;
-        }
-    }
-
-    @media (max-width: 760px) {
-        .goal-summary {
-            grid-template-columns: 1fr;
-        }
-
-        .goals-dashboard-header h1 {
-            font-size: 26px;
-        }
-
-        .featured-goal-top {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .featured-goal-badge {
-            align-self: flex-start;
-        }
-
-        .goal-actions {
-            justify-content: flex-start;
-            flex-wrap: wrap;
-        }
-    }
-
-    @media (max-width: 520px) {
-        .goal-page {
-            padding-bottom: 20px;
-        }
-
-        .goal-item,
-        .featured-goal {
-            padding: 16px;
-        }
-
-        .goals-dashboard-header {
-            align-items: flex-start;
-        }
-
-        .goals-dashboard-icon {
-            width: 42px;
-            height: 42px;
-            font-size: 21px;
-        }
-
-        .goals-dashboard-header h1 {
-            font-size: 24px;
-        }
-    }
-</style>
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/goal.css') }}">
 {% endblock %}
-
 
 {% block page_title %}
 Financial Goals
 {% endblock %}
 
-
 {% block content %}
 
 <div class="goal-page">
 
-
-    <!-- =====================================================
-         DASHBOARD HEADER
-    ====================================================== -->
-
+    <!-- Dashboard Header -->
     <div class="goals-dashboard-header">
-
-        <div class="goals-dashboard-icon">GS</div>
-
-        <div>
-            <h1>
-                Goals Statistics
-            </h1>
-
-            <p>
-                Manage, track, and plan your financial goals
-            </p>
+        <div class="goals-dashboard-icon">
+            {{ icons.icon("target", size=24) }}
         </div>
-
+        <div>
+            <h1>Goals Statistics</h1>
+            <p>Manage, track, and plan your financial goals</p>
+        </div>
     </div>
 
-
-    <!-- =====================================================
-         GOAL SUMMARY
-    ====================================================== -->
-
+    <!-- Goal Summary -->
     <div class="goal-summary">
-
-
         <!-- Total Goals -->
-
         <div class="goal-card">
-
             <div class="goal-card-label">
-
-                <span class="goal-card-icon">01</span>
-
-                <span>
-                    Total Goals
-                </span>
-
+                <span class="goal-card-icon">{{ icons.icon("target", size=18) }}</span>
+                <span>Total Goals</span>
             </div>
-
-            <h2>
-                {{ total_goals }}
-            </h2>
-
+            <h2>{{ total_goals }}</h2>
         </div>
-
 
         <!-- Active Goals -->
-
         <div class="goal-card">
-
             <div class="goal-card-label">
-
-                <span class="goal-card-icon">02</span>
-
-                <span>
-                    Active Goals
-                </span>
-
+                <span class="goal-card-icon">{{ icons.icon("analytics", size=18) }}</span>
+                <span>Active Goals</span>
             </div>
-
-            <h2>
-                {{ active_goals }}
-            </h2>
-
+            <h2>{{ active_goals }}</h2>
         </div>
-
 
         <!-- Completed Goals -->
-
         <div class="goal-card">
-
             <div class="goal-card-label">
-
-                <span class="goal-card-icon">
-                    ✓
-                </span>
-
-                <span>
-                    Completed Goals
-                </span>
-
+                <span class="goal-card-icon" style="color: var(--success-color);">{{ icons.icon("check", size=18) }}</span>
+                <span>Completed Goals</span>
             </div>
-
-            <h2>
-                {{ completed_goals }}
-            </h2>
-
+            <h2>{{ completed_goals }}</h2>
         </div>
-
-
     </div>
 
-
-    <!-- =====================================================
-         ADD FINANCIAL GOAL
-    ====================================================== -->
-
+    <!-- Add Financial Goal Form -->
     <div class="goal-box">
-
         <div class="goal-header">
-
             <div>
-
-                <span class="section-kicker">
-                    New Goal
-                </span>
-
-                <h2>
-                    Add Financial Goal
-                </h2>
-
-                <p>
-                    Create a goal and track your progress.
-                </p>
-
+                <h2><span style="display:inline-flex; align-items:center; color: var(--primary-color);">{{ icons.icon("plus", size=20) }}</span> Add Financial Goal</h2>
+                <p>Create a goal and track your progress toward milestones.</p>
             </div>
-
         </div>
-
 
         <form method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-
             <!-- Goal Name + Goal Type -->
-
             <div class="goal-form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Goal Name
-                    </label>
-
-                    <input
-                        type="text"
-                        name="goal_name"
-                        placeholder="Example: Buy a Car"
-                        required
-                    >
-
+                    <label>Goal Name</label>
+                    <input type="text" name="goal_name" placeholder="e.g. Emergency Fund / Buy a Car" required>
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Goal Type
-                    </label>
-
-                    <select
-                        name="goal_type"
-                        required
-                    >
-
-                        <option value="">
-                            Select Goal Type
-                        </option>
-
-                        <option value="Short Term">
-                            Short Term
-                        </option>
-
-                        <option value="Medium Term">
-                            Medium Term
-                        </option>
-
-                        <option value="Long Term">
-                            Long Term
-                        </option>
-
+                    <label>Goal Type</label>
+                    <select name="goal_type" required>
+                        <option value="">Select Goal Type</option>
+                        <option value="Short Term">Short Term</option>
+                        <option value="Medium Term">Medium Term</option>
+                        <option value="Long Term">Long Term</option>
                     </select>
-
                 </div>
-
             </div>
-
 
             <!-- Target + Current Amount -->
-
             <div class="goal-form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Target Amount
-                    </label>
-
-                    <input
-                        type="number"
-                        name="target_amount"
-                        step="0.01"
-                        min="0"
-                        placeholder="Example: 100000"
-                        required
-                    >
-
+                    <label>Target Amount (₹)</label>
+                    <input type="number" name="target_amount" step="0.01" min="0" placeholder="e.g. 100000" required>
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Current Amount
-                    </label>
-
-                    <input
-                        type="number"
-                        name="current_amount"
-                        step="0.01"
-                        min="0"
-                        value="0"
-                        required
-                    >
-
+                    <label>Current Amount (₹)</label>
+                    <input type="number" name="current_amount" step="0.01" min="0" value="0" required>
                 </div>
-
             </div>
-
 
             <!-- Target Date + Category -->
-
             <div class="goal-form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Target Date
-                    </label>
-
-                    <input
-                        type="date"
-                        name="target_date"
-                        required
-                    >
-
+                    <label>Target Date</label>
+                    <input type="date" name="target_date" required>
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Category
-                    </label>
-
-                    <select
-                        name="category"
-                        required
-                    >
-
-                        <option value="">
-                            Select Category
-                        </option>
-
-                        <option value="Emergency">
-                            Emergency
-                        </option>
-
-                        <option value="Education">
-                            Education
-                        </option>
-
-                        <option value="Travel">
-                            Travel
-                        </option>
-
-                        <option value="Vehicle">
-                            Vehicle
-                        </option>
-
-                        <option value="Home">
-                            Home
-                        </option>
-
-                        <option value="Retirement">
-                            Retirement
-                        </option>
-
-                        <option value="Other">
-                            Other
-                        </option>
-
+                    <label>Category</label>
+                    <select name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="Emergency">Emergency</option>
+                        <option value="Education">Education</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Vehicle">Vehicle</option>
+                        <option value="Home">Home</option>
+                        <option value="Retirement">Retirement</option>
+                        <option value="Other">Other</option>
                     </select>
-
                 </div>
-
             </div>
-
 
             <!-- Priority -->
-
             <div class="goal-form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Priority
-                    </label>
-
-                    <select
-                        name="priority"
-                        required
-                    >
-
-                        <option value="High">
-                            High
-                        </option>
-
-                        <option value="Medium" selected>
-                            Medium
-                        </option>
-
-                        <option value="Low">
-                            Low
-                        </option>
-
+                    <label>Priority</label>
+                    <select name="priority" required>
+                        <option value="High">High</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Low">Low</option>
                     </select>
-
                 </div>
-
             </div>
-
 
             <!-- Notes -->
-
             <div class="form-group">
-
-                <label>
-                    Notes
-                </label>
-
-                <textarea
-                    name="notes"
-                    rows="4"
-                    placeholder="Optional notes about this goal"
-                ></textarea>
-
+                <label>Notes</label>
+                <textarea name="notes" rows="3" placeholder="Optional notes about this goal..."></textarea>
             </div>
-
 
             <!-- Submit -->
-
-            <div class="goal-submit-row">
-
-                <button
-                    type="submit"
-                    class="btn-primary"
-                >
-                    Add Goal
+            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button type="submit" class="btn-primary">
+                    {{ icons.icon("check", size=16) }} Add Goal
                 </button>
-
             </div>
-
         </form>
-
     </div>
 
-
-    <!-- =====================================================
-         GOALS LIST
-    ====================================================== -->
-
+    <!-- Goals List -->
     <div class="goal-box">
-
         <div class="goal-header">
-
             <div>
-
-                <span class="section-kicker">
-                    Your Goals
-                </span>
-
-                <h2>
-                    My Financial Goals
-                </h2>
-
-                <p>
-                    Track your progress toward each goal.
-                </p>
-
+                <h2><span style="display:inline-flex; align-items:center; color: var(--primary-color);">{{ icons.icon("target", size=20) }}</span> My Financial Goals</h2>
+                <p>Track your progress toward each goal.</p>
             </div>
-
-            <span class="goal-list-count">
-                {{ total_goals }} goals
-            </span>
-
+            <span class="badge badge-primary">{{ total_goals }} goals</span>
         </div>
 
-
         {% if goals %}
-
-
             {% for goal in goals %}
-
                 <div class="goal-item">
-
-
                     <!-- Goal Information -->
-
                     <div class="goal-info">
-
-                        <h3>
-{{ goal.goal_name }}
-                        </h3>
-
+                        <h3>{{ goal.goal_name }}</h3>
                         <p>
-                            {{ goal.category }}
-                            ·
-                            {{ goal.goal_type }}
-                            ·
-                            {{ goal.priority }} Priority
+                            <span class="badge badge-info">{{ goal.category }}</span> · {{ goal.goal_type }} · {{ goal.priority }} Priority
                         </p>
-
-                        <small>
-                            Target Date:
-                            {{ goal.target_date.strftime("%d-%m-%Y") }}
-                        </small>
+                        <small style="display: inline-flex; align-items: center; gap: 4px;">{{ icons.icon("clock", size=13) }} Target Date: {{ goal.target_date.strftime("%d-%m-%Y") }}</small>
 
                         {% if goal.budgets and goal.budgets|length > 0 %}
                             <div style="margin-top: 6px;">
-                                <span style="font-size: 12px; background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                                    🎯 Budget: ₹{{ "{:,.0f}".format(goal.budgets[0].monthly_budget) }}/mo ({{ goal.budgets[0].month }} {{ goal.budgets[0].year }})
+                                <span class="badge badge-primary" style="font-size: 11px;">
+                                    {{ icons.icon("calculator", size=12) }} Budget: ₹{{ "{:,.0f}".format(goal.budgets[0].monthly_budget) }}/mo ({{ goal.budgets[0].month }} {{ goal.budgets[0].year }})
                                 </span>
                             </div>
                         {% endif %}
-
-
                     </div>
-
 
                     <!-- Goal Progress -->
-
                     <div class="goal-progress">
-
                         <div class="goal-progress-top">
-
-                            <span>
-
-                                ₹{{ "{:,.0f}".format(
-                                    goal.current_amount or 0
-                                ) }}
-
-                                /
-
-                                ₹{{ "{:,.0f}".format(
-                                    goal.target_amount or 0
-                                ) }}
-
-                            </span>
-
-
-                            <strong>
-                                {{ goal.progress or 0 }}%
-                            </strong>
-
+                            <span>₹{{ "{:,.0f}".format(goal.current_amount or 0) }} / ₹{{ "{:,.0f}".format(goal.target_amount or 0) }}</span>
+                            <strong>{{ goal.progress or 0 }}%</strong>
                         </div>
-
 
                         <!-- Progress Bar -->
-
                         <div class="progress-bar">
-
-                            <div
-                                class="progress-fill"
-                                style="width: {{ [goal.progress or 0, 100]|min }}%;"
-                            ></div>
-
+                            <div class="progress-fill" style="width: {{ [goal.progress or 0, 100]|min }}%;"></div>
                         </div>
 
-
-                        <small>
-
-                            Remaining:
-                            ₹{{ "{:,.0f}".format(
-                                goal.remaining_amount or 0
-                            ) }}
-
-                        </small>
-
+                        <small>Remaining: ₹{{ "{:,.0f}".format(goal.remaining_amount or 0) }}</small>
                     </div>
-
 
                     <!-- Goal Status -->
-
                     <div class="goal-status">
-
                         {% if goal.status == "Completed" %}
-
-                            <span class="status-completed">
-                                ✓ Completed
-                            </span>
-
+                            <span class="status-completed">{{ icons.icon("check", size=14) }} Completed</span>
                         {% else %}
-
-                            <span class="status-active">
-                                ● In Progress
-                            </span>
-
+                            <span class="status-active">{{ icons.icon("clock", size=14) }} In Progress</span>
                         {% endif %}
-
                     </div>
-
 
                     <!-- Goal Actions -->
-
                     <div class="goal-actions">
-
-
-                        <!-- VIEW DETAILS -->
-
-                        <a
-                            href="{{ url_for(
-                                'goal.goal_details',
-                                id=goal.id
-                            ) }}"
-                            class="btn-details"
-                        >
-                            View Details
+                        <a href="{{ url_for('goal.goal_details', id=goal.id) }}" class="btn-details">
+                            {{ icons.icon("document", size=14) }} View Details
                         </a>
-
-
-                        <!-- EDIT -->
-
-                        <a
-                            href="{{ url_for(
-                                'goal.edit_goal',
-                                id=goal.id
-                            ) }}"
-                            class="btn-edit"
-                        >
-                            Edit
+                        <a href="{{ url_for('goal.edit_goal', id=goal.id) }}" class="btn-edit">
+                            {{ icons.icon("edit", size=14) }} Edit
                         </a>
-
-
-                        <!-- DELETE -->
-
-                        <a
-                            href="{{ url_for(
-                                'goal.delete_goal',
-                                id=goal.id
-                            ) }}"
-                            class="btn-delete"
-                            onclick="return confirm(
-                                'Are you sure you want to delete this goal?'
-                            )"
-                        >
-                            Delete
+                        <a href="{{ url_for('goal.delete_goal', id=goal.id) }}" class="btn-delete" onclick="return confirm('Are you sure you want to delete this goal?')">
+                            {{ icons.icon("trash", size=14) }} Delete
                         </a>
-
                     </div>
-
                 </div>
-
             {% endfor %}
-
-
         {% else %}
-
-
-            <!-- No Goals -->
-
+            <!-- Empty Goal State -->
             <div class="empty-goal">
-
                 <div class="empty-goal-icon">
-                    🎯
+                    {{ icons.icon("target", size=32) }}
                 </div>
-
-                <h3>
-                    No financial goals yet
-                </h3>
-
-                <p>
-                    Create your first financial goal above
-                    to start tracking your progress.
-                </p>
-
+                <h3>No financial goals yet</h3>
+                <p>Create your first financial goal above to start tracking your progress.</p>
             </div>
-
-
         {% endif %}
-
     </div>
-
 
 </div>
 

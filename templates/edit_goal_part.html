@@ -1,7 +1,8 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
-Edit Goal Part
+Edit Goal Part | FinSight — Financial Intelligence
 {% endblock %}
 
 {% block content %}
@@ -9,103 +10,53 @@ Edit Goal Part
 <div class="goal-details-page">
 
     <!-- HEADER -->
-
     <div class="goal-details-header">
-
         <div class="goal-details-title-row">
-
             <span class="goal-details-icon">
-                ✏️
+                {{ icons.icon("edit", size=22) }}
             </span>
-
             <div>
-
-                <h1>
-                    Edit Goal Part
-                </h1>
-
-                <p class="goal-subtitle">
-                    {{ goal.goal_name }}
-                </p>
-
+                <h1>Edit Goal Part</h1>
+                <p class="goal-subtitle">{{ goal.goal_name }}</p>
             </div>
-
         </div>
 
-
-        <a
-            href="{{ url_for(
-                'goal.goal_details',
-                id=goal.id
-            ) }}"
-            class="back-goals-btn"
-        >
-            ← Back to Goal
+        <a href="{{ url_for('goal.goal_details', id=goal.id) }}" class="back-goals-btn">
+            &larr; Back to Goal
         </a>
-
     </div>
 
-
     <!-- EDIT FORM -->
-
     <div class="details-card">
-
         <div class="details-card-header">
-
             <div>
-
-                <h2>
-                    Edit Goal Part
-                </h2>
-
-                <p>
-                    Update the details of this goal step.
-                </p>
-
+                <h2>Edit Goal Part</h2>
+                <p>Update the details of this goal step.</p>
             </div>
-
         </div>
-
 
         <form
             method="POST"
-            action="{{ url_for(
-                'goal.edit_goal_part',
-                part_id=part.id
-            ) }}"
+            action="{{ url_for('goal.edit_goal_part', part_id=part.id) }}"
             class="part-form"
         >
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="part-form-grid">
-
-
                 <!-- PART NAME -->
-
                 <div class="form-group">
-
-                    <label>
-                        Part Name
-                    </label>
-
+                    <label>Part Name</label>
                     <input
                         type="text"
                         name="part_name"
                         value="{{ part.part_name or '' }}"
                         required
                     >
-
                 </div>
 
-
                 <!-- STEP ORDER -->
-
                 <div class="form-group">
-
-                    <label>
-                        Step Order
-                    </label>
-
+                    <label>Step Order</label>
                     <input
                         type="number"
                         name="step_order"
@@ -113,18 +64,11 @@ Edit Goal Part
                         min="1"
                         required
                     >
-
                 </div>
 
-
                 <!-- ESTIMATED COST -->
-
                 <div class="form-group">
-
-                    <label>
-                        Estimated Cost
-                    </label>
-
+                    <label>Estimated Cost (₹)</label>
                     <input
                         type="number"
                         name="estimated_cost"
@@ -132,18 +76,11 @@ Edit Goal Part
                         min="0"
                         step="0.01"
                     >
-
                 </div>
 
-
                 <!-- ACTUAL COST -->
-
                 <div class="form-group">
-
-                    <label>
-                        Actual Cost
-                    </label>
-
+                    <label>Actual Cost (₹)</label>
                     <input
                         type="number"
                         name="actual_cost"
@@ -151,109 +88,59 @@ Edit Goal Part
                         min="0"
                         step="0.01"
                     >
-
                 </div>
 
-
                 <!-- START DATE -->
-
                 <div class="form-group">
-
-                    <label>
-                        Start Date
-                    </label>
-
+                    <label>Start Date</label>
                     <input
                         type="date"
                         name="start_date"
-
                         value="{% if part.start_date %}{{ part.start_date.strftime('%Y-%m-%d') }}{% endif %}"
                     >
-
                 </div>
 
-
                 <!-- COMPLETION DATE -->
-
                 <div class="form-group">
-
-                    <label>
-                        Completion Date
-                    </label>
-
+                    <label>Completion Date</label>
                     <input
                         type="date"
                         name="completion_date"
-
                         value="{% if part.completion_date %}{{ part.completion_date.strftime('%Y-%m-%d') }}{% endif %}"
                     >
-
                 </div>
-
 
                 <!-- DESCRIPTION -->
-
                 <div class="form-group full-width">
-
-                    <label>
-                        Description
-                    </label>
-
+                    <label>Description</label>
                     <textarea
                         name="description"
-                        rows="4"
+                        rows="3"
                         placeholder="Describe this step"
                     >{{ part.description or '' }}</textarea>
-
                 </div>
-
 
                 <!-- NOTES -->
-
                 <div class="form-group full-width">
-
-                    <label>
-                        Notes
-                    </label>
-
+                    <label>Notes</label>
                     <textarea
                         name="notes"
-                        rows="4"
+                        rows="3"
                         placeholder="Additional notes"
                     >{{ part.notes or '' }}</textarea>
-
                 </div>
-
-
             </div>
-
 
             <!-- BUTTONS -->
-
             <div class="part-form-actions">
-
-                <button
-                    type="submit"
-                    class="save-part-btn"
-                >
-                    Save Changes
+                <button type="submit" class="save-part-btn">
+                    {{ icons.icon("check", size=16) }} Save Changes
                 </button>
-
-
-                <a
-                    href="{{ url_for(
-                        'goal.goal_details',
-                        id=goal.id
-                    ) }}"
-                    class="cancel-part-btn"
-                >
+                <a href="{{ url_for('goal.goal_details', id=goal.id) }}" class="cancel-part-btn">
                     Cancel
                 </a>
-
             </div>
-
         </form>
-
     </div>
 
 </div>

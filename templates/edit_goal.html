@@ -1,14 +1,12 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
-Edit Financial Goal
+Edit Financial Goal | FinSight — Financial Intelligence
 {% endblock %}
 
 {% block css %}
-
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/goal.css') }}">
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/goal.css') }}">
 {% endblock %}
 
 {% block page_title %}
@@ -18,320 +16,97 @@ Edit Financial Goal
 {% block content %}
 
 <div class="goal-page">
-
-    <div class="goal-box">
-
+    <div class="goal-box" style="max-width: 700px; margin: 0 auto;">
         <div class="goal-header">
-
             <div>
-
-                <h2>Edit Financial Goal</h2>
-
-                <p>
-                    Update your goal details and track your progress.
-                </p>
-
+                <h2><span style="display:inline-flex; align-items:center; color: var(--primary-color);">{{ icons.icon("edit", size=22) }}</span> Edit Financial Goal</h2>
+                <p>Update your goal details and track your progress.</p>
             </div>
-
         </div>
-
 
         <form method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <!-- Goal Name + Goal Type -->
-
             <div class="goal-form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Goal Name
-                    </label>
-
-                    <input
-                        type="text"
-                        name="goal_name"
-                        value="{{ goal.goal_name }}"
-                        required
-                    >
-
+                    <label>Goal Name</label>
+                    <input type="text" name="goal_name" value="{{ goal.goal_name }}" required>
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Goal Type
-                    </label>
-
-                    <select
-                        name="goal_type"
-                        required
-                    >
-
-                        <option value="Short Term"
-                            {% if goal.goal_type == "Short Term" %}
-                                selected
-                            {% endif %}
-                        >
-                            Short Term
-                        </option>
-
-                        <option value="Medium Term"
-                            {% if goal.goal_type == "Medium Term" %}
-                                selected
-                            {% endif %}
-                        >
-                            Medium Term
-                        </option>
-
-                        <option value="Long Term"
-                            {% if goal.goal_type == "Long Term" %}
-                                selected
-                            {% endif %}
-                        >
-                            Long Term
-                        </option>
-
+                    <label>Goal Type</label>
+                    <select name="goal_type" required>
+                        <option value="Short Term" {% if goal.goal_type == "Short Term" %}selected{% endif %}>Short Term</option>
+                        <option value="Medium Term" {% if goal.goal_type == "Medium Term" %}selected{% endif %}>Medium Term</option>
+                        <option value="Long Term" {% if goal.goal_type == "Long Term" %}selected{% endif %}>Long Term</option>
                     </select>
-
                 </div>
-
             </div>
-
 
             <!-- Target + Current Amount -->
-
             <div class="goal-form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Target Amount
-                    </label>
-
-                    <input
-                        type="number"
-                        name="target_amount"
-                        step="0.01"
-                        min="0"
-                        value="{{ goal.target_amount }}"
-                        required
-                    >
-
+                    <label>Target Amount (₹)</label>
+                    <input type="number" name="target_amount" step="0.01" min="0" value="{{ goal.target_amount }}" required>
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Current Amount
-                    </label>
-
-                    <input
-                        type="number"
-                        name="current_amount"
-                        step="0.01"
-                        min="0"
-                        value="{{ goal.current_amount }}"
-                        required
-                    >
-
+                    <label>Current Amount (₹)</label>
+                    <input type="number" name="current_amount" step="0.01" min="0" value="{{ goal.current_amount }}" required>
                 </div>
-
             </div>
-
 
             <!-- Target Date + Category -->
-
             <div class="goal-form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Target Date
-                    </label>
-
-                    <input
-                        type="date"
-                        name="target_date"
-                        value="{{ goal.target_date.strftime('%Y-%m-%d') }}"
-                        required
-                    >
-
+                    <label>Target Date</label>
+                    <input type="date" name="target_date" value="{{ goal.target_date.strftime('%Y-%m-%d') }}" required>
                 </div>
 
-
                 <div class="form-group">
-
-                    <label>
-                        Category
-                    </label>
-
-                    <select
-                        name="category"
-                        required
-                    >
-
-                        <option value="Emergency"
-                            {% if goal.category == "Emergency" %}
-                                selected
-                            {% endif %}
-                        >
-                            Emergency
-                        </option>
-
-                        <option value="Education"
-                            {% if goal.category == "Education" %}
-                                selected
-                            {% endif %}
-                        >
-                            Education
-                        </option>
-
-                        <option value="Travel"
-                            {% if goal.category == "Travel" %}
-                                selected
-                            {% endif %}
-                        >
-                            Travel
-                        </option>
-
-                        <option value="Vehicle"
-                            {% if goal.category == "Vehicle" %}
-                                selected
-                            {% endif %}
-                        >
-                            Vehicle
-                        </option>
-
-                        <option value="Home"
-                            {% if goal.category == "Home" %}
-                                selected
-                            {% endif %}
-                        >
-                            Home
-                        </option>
-
-                        <option value="Retirement"
-                            {% if goal.category == "Retirement" %}
-                                selected
-                            {% endif %}
-                        >
-                            Retirement
-                        </option>
-
-                        <option value="Other"
-                            {% if goal.category == "Other" %}
-                                selected
-                            {% endif %}
-                        >
-                            Other
-                        </option>
-
+                    <label>Category</label>
+                    <select name="category" required>
+                        <option value="Emergency" {% if goal.category == "Emergency" %}selected{% endif %}>Emergency</option>
+                        <option value="Education" {% if goal.category == "Education" %}selected{% endif %}>Education</option>
+                        <option value="Travel" {% if goal.category == "Travel" %}selected{% endif %}>Travel</option>
+                        <option value="Vehicle" {% if goal.category == "Vehicle" %}selected{% endif %}>Vehicle</option>
+                        <option value="Home" {% if goal.category == "Home" %}selected{% endif %}>Home</option>
+                        <option value="Retirement" {% if goal.category == "Retirement" %}selected{% endif %}>Retirement</option>
+                        <option value="Other" {% if goal.category == "Other" %}selected{% endif %}>Other</option>
                     </select>
-
                 </div>
-
             </div>
-
 
             <!-- Priority -->
-
             <div class="goal-form-row">
-
                 <div class="form-group">
-
-                    <label>
-                        Priority
-                    </label>
-
-                    <select
-                        name="priority"
-                        required
-                    >
-
-                        <option value="High"
-                            {% if goal.priority == "High" %}
-                                selected
-                            {% endif %}
-                        >
-                            High
-                        </option>
-
-                        <option value="Medium"
-                            {% if goal.priority == "Medium" %}
-                                selected
-                            {% endif %}
-                        >
-                            Medium
-                        </option>
-
-                        <option value="Low"
-                            {% if goal.priority == "Low" %}
-                                selected
-                            {% endif %}
-                        >
-                            Low
-                        </option>
-
+                    <label>Priority</label>
+                    <select name="priority" required>
+                        <option value="High" {% if goal.priority == "High" %}selected{% endif %}>High</option>
+                        <option value="Medium" {% if goal.priority == "Medium" %}selected{% endif %}>Medium</option>
+                        <option value="Low" {% if goal.priority == "Low" %}selected{% endif %}>Low</option>
                     </select>
-
                 </div>
-
             </div>
-
 
             <!-- Notes -->
-
             <div class="form-group">
-
-                <label>
-                    Notes
-                </label>
-
-                <textarea
-                    name="notes"
-                    rows="4"
-                    placeholder="Optional notes"
-                >{{ goal.notes or '' }}</textarea>
-
+                <label>Notes</label>
+                <textarea name="notes" rows="4" placeholder="Optional notes">{{ goal.notes or '' }}</textarea>
             </div>
-
 
             <!-- Buttons -->
-
-            <div
-                style="
-                    display:flex;
-                    gap:10px;
-                    margin-top:5px;
-                "
-            >
-
-                <button
-                    type="submit"
-                    class="btn-primary"
-                >
-                    Update Goal
+            <div style="display:flex; gap:12px; margin-top:10px;">
+                <button type="submit" class="btn-primary">
+                    {{ icons.icon("check", size=16) }} Update Goal
                 </button>
-
-
-                <a
-                    href="{{ url_for('goal.goals') }}"
-                    class="btn-edit"
-                    style="padding:11px 18px;"
-                >
+                <a href="{{ url_for('goal.goals') }}" class="btn btn-secondary" style="text-decoration: none;">
                     Cancel
                 </a>
-
             </div>
-
         </form>
-
     </div>
-
 </div>
 
 {% endblock %}

@@ -128,18 +128,13 @@ def get_monthly_financial_report(user_id, month_input=None, year_input=None):
         for cat, amt in category_data
     ]
 
-    # 4. Budget for selected month
-    # First match exact month & year if exists, else match active budget
+    # 4. Budget for selected month (Strict user_id + month + year lookup)
     month_str = calendar.month_name[month]
     budget_obj = Budget.query.filter(
         Budget.user_id == user_id,
+        func.lower(Budget.month) == month_str.lower(),
         Budget.year == year
-    ).filter(
-        (Budget.month == month_str) | (Budget.month == f"{month:02d}") | (Budget.month.startswith(month_str[:3]))
     ).first()
-
-    if not budget_obj:
-        budget_obj = Budget.query.filter_by(user_id=user_id).order_by(Budget.created_at.desc()).first()
 
     budget_amount = budget_obj.monthly_budget if budget_obj else 0.0
     budget_remaining = budget_amount - total_expenses if budget_amount > 0 else 0.0

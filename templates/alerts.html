@@ -1,3 +1,4 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
@@ -22,7 +23,7 @@ FinSight — Financial Alerts Dashboard
     .alerts-header h1 {
         font-size: 26px;
         font-weight: 700;
-        color: #0F172A;
+        color: var(--text-primary, #0F172A);
         margin: 0 0 6px 0;
         display: flex;
         align-items: center;
@@ -30,7 +31,7 @@ FinSight — Financial Alerts Dashboard
     }
 
     .alerts-header p {
-        color: #64748B;
+        color: var(--text-secondary, #64748B);
         margin: 0;
         font-size: 14px;
     }
@@ -47,7 +48,7 @@ FinSight — Financial Alerts Dashboard
         background: var(--card-bg, #ffffff);
         border-radius: 12px;
         padding: 18px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--card-shadow, 0 1px 3px rgba(0, 0, 0, 0.05));
         border: 1px solid var(--card-border, #E2E8F0);
         display: flex;
         align-items: center;
@@ -64,15 +65,10 @@ FinSight — Financial Alerts Dashboard
         font-size: 20px;
     }
 
-    .summary-icon.total { background: #EFF6FF; color: #2563EB; }
-    .summary-icon.unread { background: #FEF2F2; color: #DC2626; }
-    .summary-icon.critical { background: #FFF7ED; color: #EA580C; }
-    .summary-icon.resolved { background: #F0FDF4; color: #16A34A; }
-
-    [data-rendered-theme="dark"] .summary-icon.total { background: #172554; color: #93c5fd; }
-    [data-rendered-theme="dark"] .summary-icon.unread { background: #371b1e; color: #fca5a5; }
-    [data-rendered-theme="dark"] .summary-icon.critical { background: #451a03; color: #fde047; }
-    [data-rendered-theme="dark"] .summary-icon.resolved { background: #143820; color: #86efac; }
+    .summary-icon.total { background: var(--info-bg, #EFF6FF); color: var(--info-color, #2563EB); }
+    .summary-icon.unread { background: var(--danger-bg, #FEF2F2); color: var(--danger-color, #DC2626); }
+    .summary-icon.critical { background: var(--warning-bg, #FFF7ED); color: var(--warning-color, #EA580C); }
+    .summary-icon.resolved { background: var(--success-bg, #F0FDF4); color: var(--success-color, #16A34A); }
 
     .summary-info .label {
         font-size: 13px;
@@ -108,7 +104,7 @@ FinSight — Financial Alerts Dashboard
     }
 
     .filter-pill:hover, .filter-pill.active {
-        background: #2563EB;
+        background: var(--primary-color, #2563EB);
         color: #ffffff;
     }
 
@@ -123,8 +119,8 @@ FinSight — Financial Alerts Dashboard
         background: var(--card-bg, #ffffff);
         border-radius: 12px;
         padding: 18px;
-        border-left: 5px solid #CBD5E1;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        border-left: 5px solid var(--card-border, #CBD5E1);
+        box-shadow: var(--card-shadow, 0 1px 3px rgba(0, 0, 0, 0.04));
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
@@ -136,15 +132,10 @@ FinSight — Financial Alerts Dashboard
         transform: translateY(-1px);
     }
 
-    .alert-card.danger { border-left-color: #DC2626; background: #FEF2F2; }
-    .alert-card.warning { border-left-color: #D97706; background: #FFFBEB; }
-    .alert-card.info { border-left-color: #2563EB; background: #EFF6FF; }
-    .alert-card.success { border-left-color: #16A34A; background: #F0FDF4; }
-
-    [data-rendered-theme="dark"] .alert-card.danger { background: #371b1e; }
-    [data-rendered-theme="dark"] .alert-card.warning { background: #372910; }
-    [data-rendered-theme="dark"] .alert-card.info { background: #172554; }
-    [data-rendered-theme="dark"] .alert-card.success { background: #143820; }
+    .alert-card.danger { border-left-color: var(--danger-color, #DC2626); background: var(--danger-bg, #FEF2F2); }
+    .alert-card.warning { border-left-color: var(--warning-color, #D97706); background: var(--warning-bg, #FFFBEB); }
+    .alert-card.info { border-left-color: var(--info-color, #2563EB); background: var(--info-bg, #EFF6FF); }
+    .alert-card.success { border-left-color: var(--success-color, #16A34A); background: var(--success-bg, #F0FDF4); }
 
     .alert-main {
         display: flex;
@@ -157,10 +148,10 @@ FinSight — Financial Alerts Dashboard
         margin-top: 2px;
     }
 
-    .alert-card.danger .alert-badge-icon { color: #DC2626; }
-    .alert-card.warning .alert-badge-icon { color: #D97706; }
-    .alert-card.info .alert-badge-icon { color: #2563EB; }
-    .alert-card.success .alert-badge-icon { color: #16A34A; }
+    .alert-card.danger .alert-badge-icon { color: var(--danger-color, #DC2626); }
+    .alert-card.warning .alert-badge-icon { color: var(--warning-color, #D97706); }
+    .alert-card.info .alert-badge-icon { color: var(--info-color, #2563EB); }
+    .alert-card.success .alert-badge-icon { color: var(--success-color, #16A34A); }
 
     .alert-details h3 {
         font-size: 16px;
@@ -201,9 +192,9 @@ FinSight — Financial Alerts Dashboard
     }
 
     .btn-toggle-read:hover {
-        background: #2563EB;
+        background: var(--primary-color, #2563EB);
         color: #FFFFFF;
-        border-color: #2563EB;
+        border-color: var(--primary-color, #2563EB);
     }
 
     .empty-state {
@@ -223,7 +214,7 @@ FinSight — Financial Alerts Dashboard
     <!-- Header -->
     <div class="alerts-header">
         <div>
-            <h1><i class="fa-solid fa-bell"></i> Alerts & Notifications Dashboard</h1>
+            <h1>{{ icons.icon("bell", size=24) }} Alerts & Notifications Dashboard</h1>
             <p>Monitor financial triggers, budget limits, spending spikes, and goal progress in real time.</p>
         </div>
     </div>
@@ -231,31 +222,31 @@ FinSight — Financial Alerts Dashboard
     <!-- 1. Top Summary Cards -->
     <div class="summary-grid">
         <div class="summary-card">
-            <div class="summary-icon total"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="summary-icon total">{{ icons.icon("bell", size=20) }}</div>
             <div class="summary-info">
                 <span class="label">Total Alerts</span>
                 <span class="value">{{ total_alerts }}</span>
             </div>
         </div>
         <div class="summary-card">
-            <div class="summary-icon unread"><i class="fa-solid fa-bell-dot"></i></div>
+            <div class="summary-icon unread">{{ icons.icon("alert", size=20) }}</div>
             <div class="summary-info">
                 <span class="label">Unread Alerts</span>
-                <span class="value" style="color: #DC2626;">{{ unread_alerts }}</span>
+                <span class="value" style="color: var(--danger-color);">{{ unread_alerts }}</span>
             </div>
         </div>
         <div class="summary-card">
-            <div class="summary-icon critical"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="summary-icon critical">{{ icons.icon("alert", size=20) }}</div>
             <div class="summary-info">
                 <span class="label">Critical Alerts</span>
-                <span class="value" style="color: #EA580C;">{{ critical_alerts }}</span>
+                <span class="value" style="color: var(--warning-color);">{{ critical_alerts }}</span>
             </div>
         </div>
         <div class="summary-card">
-            <div class="summary-icon resolved"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="summary-icon resolved">{{ icons.icon("check", size=20) }}</div>
             <div class="summary-info">
                 <span class="label">Read / Resolved</span>
-                <span class="value" style="color: #16A34A;">{{ resolved_alerts }}</span>
+                <span class="value" style="color: var(--success-color);">{{ resolved_alerts }}</span>
             </div>
         </div>
     </div>

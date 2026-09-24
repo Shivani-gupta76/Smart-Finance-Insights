@@ -1,108 +1,348 @@
-.budget-container{
-    padding:30px;
+/* =========================================================
+   Budget Management Styles — Elevated Card Layout
+   ========================================================= */
+
+.budget-container {
+    padding: 0;
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
 }
 
-.budget-card{
-    background: var(--card-bg, white);
-    border: 1px solid var(--card-border, #e2e8f0);
-    max-width:550px;
-    padding:30px;
-    border-radius:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,.08);
+.budget-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    padding: 32px;
+    border-radius: 18px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.25s ease;
 }
 
-.budget-card h2{
-    margin-bottom:20px;
-    color: var(--text-primary, #0f172a);
+.budget-card:hover {
+    box-shadow: var(--card-shadow-hover);
 }
 
-.form-group{
-    margin-bottom:18px;
+.budget-card h2 {
+    margin-bottom: 24px;
+    color: var(--text-primary);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.form-group label{
-    display:block;
-    margin-bottom:8px;
-    font-weight:600;
-    color: var(--text-primary, #374151);
+.form-group {
+    margin-bottom: 20px;
 }
 
-.form-group input, .form-group select{
-    width:100%;
-    padding:10px;
-    border:1px solid var(--input-border, #ccc);
-    border-radius:8px;
-    font-family:inherit;
-    font-size:14px;
-    box-sizing:border-box;
-    background: var(--input-bg, #fff);
-    color: var(--input-text, #0f172a);
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
 }
 
-.form-group select:focus, .form-group input:focus{
-    outline:none;
-    border-color:#2563eb;
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--input-border);
+    border-radius: 10px;
+    font-size: 14px;
+    background: var(--input-bg);
+    color: var(--input-text);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.form-group select:focus, .form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .budget-actions {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-top: 20px;
+    margin-top: 24px;
 }
 
-.btn-save{
-    background:#2563EB;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:15px;
-    font-weight:600;
+.btn-save {
+    background: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.btn-save:hover{
-    background:#1d4ed8;
+.btn-save:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
 }
 
-.btn-delete{
-    background:#ef4444;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:15px;
-    font-weight:600;
-    text-decoration:none;
-    display:inline-block;
+.btn-delete {
+    background: var(--danger-color);
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
 }
 
-.btn-delete:hover{
-    background:#dc2626;
+.btn-delete:hover {
+    background: #dc2626;
 }
 
 .linked-goal-badge {
-    margin-top: 20px;
-    padding: 14px 18px;
-    background: var(--bg-primary, #eff6ff);
-    border: 1px solid var(--card-border, #bfdbfe);
-    border-radius: 10px;
-    color: var(--text-primary, #1e40af);
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: var(--primary-light);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    border-radius: 12px;
+    color: var(--text-primary);
 }
 
 .linked-goal-badge h4 {
     margin: 0 0 6px;
     font-size: 15px;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--text-primary, #1e40af);
+    color: var(--primary-color);
 }
 
 .linked-goal-badge p {
     margin: 0;
     font-size: 13px;
-    color: var(--text-secondary, #3b82f6);
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* =========================================================
+   Budget History Table & Status Badges
+   ========================================================= */
+
+.budget-history-card {
+    padding: 32px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    margin-top: 16px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+}
+
+.history-table th {
+    background: var(--bg-surface-secondary, #F8FAFC);
+    color: var(--text-secondary, #64748B);
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--card-border, #E2E8F0);
+}
+
+.history-table th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.history-table th:last-child {
+    border-top-right-radius: 10px;
+}
+
+.history-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--card-border, #F1F5F9);
+    color: var(--text-primary, #0F172A);
+    vertical-align: middle;
+}
+
+.history-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.history-table tbody tr:hover td {
+    background: rgba(37, 99, 235, 0.02);
+}
+
+.usage-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 90px;
+}
+
+.usage-cell span {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mini-progress-bg {
+    width: 100%;
+    height: 6px;
+    background: #E2E8F0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.mini-progress-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.mini-progress-bar.status-healthy {
+    background: #10B981;
+}
+
+.mini-progress-bar.status-ontrack {
+    background: #F59E0B;
+}
+
+.mini-progress-bar.status-overbudget {
+    background: #EF4444;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.status-badge.status-healthy {
+    background: #D1FAE5;
+    color: #065F46;
+    border: 1px solid #A7F3D0;
+}
+
+.status-badge.status-ontrack {
+    background: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+}
+
+.status-badge.status-overbudget {
+    background: #FEE2E2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+}
+
+.goal-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: var(--primary-light, #EFF6FF);
+    color: var(--primary-color, #2563EB);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.history-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-action-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--primary-color, #2563EB);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-action-edit:hover {
+    background: var(--primary-color, #2563EB);
+    color: #ffffff;
+}
+
+.btn-action-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: rgba(239, 68, 68, 0.08);
+    color: #EF4444;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-action-delete:hover {
+    background: #EF4444;
+    color: #ffffff;
+}
+
+.empty-history-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary, #64748B);
+}
+
+.empty-history-state .empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--bg-surface-secondary, #F1F5F9);
+    color: var(--text-secondary, #64748B);
+}
+
+.empty-history-state h3 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary, #0F172A);
+}
+
+.empty-history-state p {
+    margin: 0;
+    font-size: 14px;
 }

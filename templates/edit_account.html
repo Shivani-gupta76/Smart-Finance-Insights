@@ -1,7 +1,8 @@
+{% import "partials/svg_icons.html" as icons %}
 {% extends "layout.html" %}
 
 {% block title %}
-Edit Account
+Edit Account | FinSight — Financial Intelligence
 {% endblock %}
 
 {% block css %}
@@ -14,18 +15,15 @@ Edit Account
 
 {% block content %}
 
-<div class="account-container">
-
-    <div class="account-form">
-
-        <h3>Edit Account</h3>
+<div class="account-container" style="max-width: 600px; margin: 0 auto;">
+    <div class="account-form" style="width: 100%;">
+        <h3><span style="display:inline-flex; align-items:center; color: var(--primary-color);">{{ icons.icon("edit", size=22) }}</span> Edit Account</h3>
 
         <form method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="form-group">
                 <label>Account Name</label>
-
                 <input
                     type="text"
                     name="account_name"
@@ -36,28 +34,18 @@ Edit Account
 
             <div class="form-group">
                 <label>Account Type</label>
-
                 <select name="account_type" required>
-
                     <option value="Bank" {% if account.account_type=="Bank" %}selected{% endif %}>Bank</option>
-
                     <option value="Cash" {% if account.account_type=="Cash" %}selected{% endif %}>Cash</option>
-
                     <option value="Credit Card" {% if account.account_type=="Credit Card" %}selected{% endif %}>Credit Card</option>
-
                     <option value="UPI / Wallet" {% if account.account_type=="UPI / Wallet" %}selected{% endif %}>UPI / Wallet</option>
-
                     <option value="Investment" {% if account.account_type=="Investment" %}selected{% endif %}>Investment</option>
-
                     <option value="Other" {% if account.account_type=="Other" %}selected{% endif %}>Other</option>
-
                 </select>
-
             </div>
 
             <div class="form-group">
-                <label>Current Balance</label>
-
+                <label>Current Balance (₹)</label>
                 <input
                     type="number"
                     step="0.01"
@@ -69,22 +57,20 @@ Edit Account
 
             <div class="form-group">
                 <label>Description</label>
-
                 <textarea
                     name="description"
-                    rows="4"
+                    rows="3"
                 >{{ account.description }}</textarea>
-
             </div>
 
-            <button class="btn-save" type="submit">
-                Update Account
-            </button>
-
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-save" type="submit">
+                    {{ icons.icon("check", size=16) }} Update Account
+                </button>
+                <a href="{{ url_for('account.accounts') }}" class="btn btn-secondary" style="text-decoration: none;">Cancel</a>
+            </div>
         </form>
-
     </div>
-
 </div>
 
 {% endblock %}
