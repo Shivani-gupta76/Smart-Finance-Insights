@@ -399,11 +399,6 @@ DATABASE_URL=sqlite:///database/finance.db
 SESSION_COOKIE_SECURE=False
 ```
 
-> [!CAUTION]
-> Never commit the `.env` file or expose secret keys in public version control repositories.
-
----
-
 ## 13. Running the Application
 
 To start the Flask development server:
@@ -418,6 +413,26 @@ The application will run locally at:
 Upon execution, database tables and default indexes will automatically initialize if they do not exist.
 
 ---
+
+## 🚀 Deployment
+
+FinSight is deployed as a production Flask application using **Render** and **Gunicorn**.
+
+### 🌐 Live Application
+
+**Live URL:**  
+https://smart-finance-insights-rbd6.onrender.com
+
+### ⚙️ Deployment Configuration
+
+- **Hosting Platform:** Render
+- **Source Repository:** GitHub
+- **Deployment Branch:** `main`
+- **Web Framework:** Flask
+- **Production Server:** Gunicorn
+- **Build Command:**
+  ```bash
+  pip install -r requirements.txt
 
 ## 14. Testing
 
